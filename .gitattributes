@@ -1,0 +1,6 @@
+*.csv filter=lfs diff=lfs merge=lfs -text
+ac_phylo.txt filter=lfs diff=lfs merge=lfs -text
+ids.json filter=lfs diff=lfs merge=lfs -text
+*.gltf filter=lfs diff=lfs merge=lfs -text
+*.otf filter=lfs diff=lfs merge=lfs -text
+AMINtoSEC.csv filter=lfs diff=lfs merge=lfs -text
