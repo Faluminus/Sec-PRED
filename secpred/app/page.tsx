@@ -1,6 +1,6 @@
 "use client"
 import { Canvas,useFrame,PerspectiveCameraProps} from '@react-three/fiber';
-import {Html,Clone} from '@react-three/drei';
+import {Html,Clone,SpotLight} from '@react-three/drei';
 import Footer_component from './components/footer_component';
 import CombinedMesh from './components/combinedMesh';
 import {useEffect,useState} from 'react';
@@ -30,7 +30,7 @@ export default function Home() {
         <pointLight position={[0, 0, 0]} decay={2} intensity={1} castShadow={true}/>
         <CombinedMesh/>
         <Html transform={false} fullscreen>
-            <div className="flex h-screen w-screen items-center justify-center">
+            <div className="flex h-screen w-screen items-center justify-center text-gray-950">
               <div className="flex flex-col w-[29vw] gap-7 items-center">
                 <div className='flex items-center justify-center flex-col font-[200]'>
                   <h1 className='text-[50px]'>Sec<span className='font-[700]'>PRED</span></h1>

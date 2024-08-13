@@ -47,7 +47,7 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/favicon.png" sizes="180x180"/>
       </head>
-      <body className="h-screen w-screen">
+      <body className="h-screen w-screen bg-slate-200">
         <Suspense fallback={<Loading/>}>
          
             {children}

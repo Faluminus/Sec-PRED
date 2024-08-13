@@ -6,10 +6,13 @@ import { gql } from "graphql-tag";
 
 
 
+const token = "d3c6a4c04dcea0c54025753e4410b8e6c2276d39"
+
 const typeDefs = gql`
   type Query {
     aminoAcidSeq(id: String!):  String
     secStructureSeq(aminoAcidSeq: String!): String
+    swissModel(aminoAcidSeq:String!): String
   }
 `;
 
@@ -18,6 +21,7 @@ const resolvers = {
   Query: {
     aminoAcidSeq: async (_:null, { id }: { id:string }) => {
       try {
+        console.log('https://www.rcsb.org/fasta/entry/'+id+'/download')
         const FASTA = fetch('https://www.rcsb.org/fasta/entry/'+id+'/download',{
             method:"GET",
             mode:"cors",
@@ -34,6 +38,9 @@ const resolvers = {
       }
     },
     secStructureSeq: async(_:null,{aminoAcidSeq}:{aminoAcidSeq:string}) =>{
+        
+    },
+    swissModel: async(_:null,{aminoAcidSeq}:{aminoAcidSeq:string}) =>{
         
     },
   },
