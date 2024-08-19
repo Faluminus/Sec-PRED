@@ -1,0 +1,5 @@
+https://sable.cchmc.org/
+https://www.compbio.dundee.ac.uk/jpred/
+https://www.nature.com/articles/s41598-022-18205-9 => https://github.com/arontier/S_Pred_Paper
+https://academic.oup.com/bioinformatics/article/37/20/3464/6275257
+https://github.com/facebookresearch/esm

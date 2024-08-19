@@ -21,7 +21,6 @@ const resolvers = {
   Query: {
     aminoAcidSeq: async (_:null, { id }: { id:string }) => {
       try {
-        console.log('https://www.rcsb.org/fasta/entry/'+id+'/download')
         const FASTA = fetch('https://www.rcsb.org/fasta/entry/'+id+'/download',{
             method:"GET",
             mode:"cors",
@@ -40,8 +39,27 @@ const resolvers = {
     secStructureSeq: async(_:null,{aminoAcidSeq}:{aminoAcidSeq:string}) =>{
         
     },
-    swissModel: async(_:null,{aminoAcidSeq}:{aminoAcidSeq:string}) =>{
-        
+    swissModel: (_:null,{aminoAcidSeq}:{aminoAcidSeq:string}) =>{
+        const headers = new Headers()
+        headers.set('Authorization',token)
+
+        const requestOptions = {
+          method:'POST',
+          headers:headers,
+          body: JSON.stringify(
+            {
+              "target_sequences": aminoAcidSeq
+            }
+          )
+        }
+        try {
+        const StartModeling  = fetch('https://swissmodel.expasy.org/automodel',requestOptions)
+        .then((response) => {
+          return response.text()
+        })
+        } catch (error) {
+          
+        }
     },
   },
 };
