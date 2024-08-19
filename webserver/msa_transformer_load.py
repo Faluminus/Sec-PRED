@@ -15,6 +15,19 @@ import numpy as np
 import argparse
 from einops import rearrange
 import string
+import logging
+
+
+log_dir = "webserver/logs"
+
+# Logger setup
+log_file = os.path.join(log_dir, "msa_transformer.log")
+logging.basicConfig(filename=log_file,
+                    format='%(asctime)s %(message)s',
+                    filemode='a')
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
 
 
 PROTEIN_PROPERTY = "secondary_structure"
@@ -191,7 +204,7 @@ def get_msa_transformer_prediction(aminoAcid):
     #msa_method = 'none'
     msa_row_num = 256
     device = 'gpu'
-
+    
     #parser = argparse.ArgumentParser(description='S-Pred for secondary structrue prediction: input msa and output ss8 and ss3 (.json)')
     #parser.add_argument('-i', '--input_path', type=str, default='examples/s_pred_ss.a3m',
                         #help='input msa path (.json or .a3m)')
@@ -213,12 +226,13 @@ def get_msa_transformer_prediction(aminoAcid):
     #args = parser.parse_args()
 
 
-    print("===================================")
-    print("Print Arguments:")
-    print("===================================")
+    #print("===================================")
+    #print("Print Arguments:")
+    #print("===================================")
 
     #print(' '.join(f'{k} = {v}\n' for k, v in vars(args).items()))
 
+    logger.info("Initi")
 
     if device == 'cpu':
         device = torch.device("cpu")
@@ -287,6 +301,10 @@ def get_msa_transformer_prediction(aminoAcid):
     output_property_softmax = F.softmax(output_property, dim=1)
     output_property_softmax_np = output_property_softmax.data.cpu().numpy().squeeze()
     output_property_softmax_np_argmax = np.argmax(output_property_softmax_np, axis=0)
+
+    print("===================================")
+    print("Done")
+    print("===================================")
     
     return output_property_softmax_np_argmax
     
@@ -294,6 +312,4 @@ def get_msa_transformer_prediction(aminoAcid):
 
     #save_ss_to_json(out_ss_json_path, output_property_softmax_np_argmax, query_seq)
 
-    print("===================================")
-    print("Done")
-    print("===================================")
+    
