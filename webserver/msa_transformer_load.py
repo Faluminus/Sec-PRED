@@ -186,9 +186,9 @@ def save_ss_to_json(out_ss_json, output_ss_np_argmax, query_seq):
     
 def get_msa_transformer_prediction(aminoAcid):
     #input_path = 'examples/s_pred_ss.a3m'
-    output_path = 's_pred_ss.out'
+    #output_path = 's_pred_ss.out'
     conv_model_path = 's_pred_ss_weights.pth'
-    msa_method = 'none'
+    #msa_method = 'none'
     msa_row_num = 256
     device = 'gpu'
 

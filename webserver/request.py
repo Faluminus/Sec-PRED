@@ -28,7 +28,7 @@ class HTTPRequests(BaseHTTPRequestHandler):
             response_data = self.handle_json_data(parsed_data)
         
         self.wfile.write(bytes(json.dumps(response_data), "utf-8"))
-
+        
         #if self.headers['AC'] != '':
             #secStructure = self.controller.predictSecStrucuture(self.headers['AC'])
             
