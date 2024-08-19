@@ -1,7 +1,6 @@
 "use client"
 import { Canvas,useFrame,PerspectiveCameraProps} from '@react-three/fiber';
 import {Html,Clone,SpotLight} from '@react-three/drei';
-import Footer_component from './components/footer_component';
 import CombinedMesh from './components/combinedMesh';
 import {useEffect,useState} from 'react';
 import { useRouter } from 'next/navigation'
