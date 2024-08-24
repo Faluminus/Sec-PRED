@@ -36,8 +36,21 @@ const resolvers = {
 
       }
     },
-    secStructureSeq: async(_:null,{aminoAcidSeq}:{aminoAcidSeq:string}) =>{
-        
+    secStructureSeq: async (_: null, { aminoAcidSeq }: { aminoAcidSeq: string }) => {
+      try {
+          const response = await fetch('http://localhost:1212', {
+              method: "POST",
+              headers: {
+                  'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ "AC": aminoAcidSeq }),
+          });
+          const secStructureSeq = await response.text();
+          return secStructureSeq;
+      } catch (error) {
+          console.error(error);
+          return null;
+      }
     },
     swissModel: (_:null,{aminoAcidSeq}:{aminoAcidSeq:string}) =>{
         const headers = new Headers()

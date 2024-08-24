@@ -1,5 +1,4 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
-import time
 import json
 from urllib.parse import parse_qs
 from model import TaskModel
@@ -7,12 +6,13 @@ from controller import TaskController
 
 
 hostName = "localhost"
-serverPort = 8080
+serverPort = 1212
 
 class HTTPRequests(BaseHTTPRequestHandler):
-    def __init__(self):
+    def __init__(self,request, client_address, server):
         self.model = TaskModel()
         self.controller = TaskController(self.model)
+        super().__init__(request, client_address, server)
 
     def do_POST(self):
         content_length = int(self.headers['Content-Length'])
@@ -21,16 +21,23 @@ class HTTPRequests(BaseHTTPRequestHandler):
         content_type = self.headers.get('Content-Type')
 
         if content_type == 'application/x-www-form-urlencoded':
-            parsed_data = parse_qs(post_data.decode('utf-8'))
-            response_data = self.handle_form_data(parsed_data)
+            response_data = parse_qs(post_data.decode('utf-8'))
         elif content_type == 'application/json':
-            parsed_data = json.loads(post_data)
-            response_data = self.handle_json_data(parsed_data)
+            response_data = json.loads(post_data)
+            
         
-        self.wfile.write(bytes(json.dumps(response_data), "utf-8"))
+        if 'AC' in response_data and response_data['AC']:
+            data = ''.join(response_data['AC'])
+            secStructure = self.controller.predict_sec_strucuture(data)
+        else:
+            secStructure = json.dumps({'error': 'Invalid or missing AC value'})
         
-        #if self.headers['AC'] != '':
-            #secStructure = self.controller.predictSecStrucuture(self.headers['AC'])
+        self.send_response(200)
+        self.send_header("Content-type", "application/json")
+        self.end_headers()
+        self.wfile.write(bytes(json.dumps({'secStructure': secStructure}), 'utf-8'))
+
+        
             
 
 if __name__ == "__main__":     

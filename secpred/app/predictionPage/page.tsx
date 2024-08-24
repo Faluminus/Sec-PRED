@@ -25,10 +25,28 @@ const PredictionPage = () =>{
         cache: new InMemoryCache(),
     });
     
-    const handlePrediction =()=>{
-        setLoading(true)
-    }
+    const handlePrediction = async()=>{
 
+        setLoading(true)
+
+        await client
+        .query({
+            query: gql`
+            query Query($aminoAcidSeq: String!) {
+                secStructureSeq(aminoAcidSeq: $aminoAcidSeq)
+            }
+            `,
+            variables: {
+                aminoAcidSeq: aminoAcidSeq,  
+            },
+        })
+        .then((result) => {
+            setSecStructureSeq(result.data['secStructureSeq'])
+            setLoading(false)
+        });
+
+    }
+    
     const handleProteinID = async ()=>{
         if(!proteinIDLoading)
         {

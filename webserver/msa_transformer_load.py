@@ -124,6 +124,8 @@ def read_msa_json(msa_json_path, msa_method, msa_row_num):
 
     return msa_seq, query_seq
 
+
+
 def read_msa_file(filepath, msa_row_num):
 
     seqs = []
@@ -148,6 +150,7 @@ def read_msa_file(filepath, msa_row_num):
 
 
 def extract_msa_transformer_features(msa_seq, msa_transformer, msa_batch_converter, device=torch.device("cpu")):
+
     msa_seq_label, msa_seq_str, msa_seq_token = msa_batch_converter([msa_seq])
     msa_seq_token = msa_seq_token.to(device)
     msa_row, msa_col = msa_seq_token.shape[1], msa_seq_token.shape[2]
@@ -200,7 +203,7 @@ def save_ss_to_json(out_ss_json, output_ss_np_argmax, query_seq):
 def get_msa_transformer_prediction(aminoAcid):
     #input_path = 'examples/s_pred_ss.a3m'
     #output_path = 's_pred_ss.out'
-    conv_model_path = 's_pred_ss_weights.pth'
+    conv_model_path = 'webserver/s_pred_ss_weights.pth'
     #msa_method = 'none'
     msa_row_num = 256
     device = 'gpu'
@@ -231,9 +234,8 @@ def get_msa_transformer_prediction(aminoAcid):
     #print("===================================")
 
     #print(' '.join(f'{k} = {v}\n' for k, v in vars(args).items()))
-
-    logger.info("Initi")
-
+    
+    
     if device == 'cpu':
         device = torch.device("cpu")
     else:
@@ -244,8 +246,7 @@ def get_msa_transformer_prediction(aminoAcid):
             device = torch.device("cpu")
 
     #if already have the msa_transformer_weight
-    #msa_transformer, msa_alphabet = esm.pretrained.load_model_and_alphabet_local("s_pred_ss_weights.pth")
-
+    #msa_transformer, msa_alphabet = esm.pretrained.load_model_and_alphabet_local("s_pred_ss_weights.py")
     msa_transformer, msa_alphabet = esm.pretrained.esm_msa1_t12_100M_UR50S()
     msa_batch_converter = msa_alphabet.get_batch_converter()
 
@@ -256,7 +257,7 @@ def get_msa_transformer_prediction(aminoAcid):
     conv_model = conv_model.to(device)
     
     if device.type == 'cpu':
-        ch = torch.load(conv_model_path, map_location=torch.device('cpu'))
+        ch = torch.load(conv_model_path, map_location=torch.device('cpu'),weights_only=True)
     else:
         ch = torch.load(conv_model_path)
 
@@ -268,7 +269,7 @@ def get_msa_transformer_prediction(aminoAcid):
         param.requires_grad = False
     for param in conv_model.parameters():
         param.requires_grad = False
-
+    
     print("===================================")
     print("Extract msa transformer features")
     print("===================================")
@@ -277,15 +278,16 @@ def get_msa_transformer_prediction(aminoAcid):
     #   msa_seq, query_seq = read_msa_json(input_path, msa_method, msa_row_num)
     #else:
     #msa_seq, query_seq = read_msa_file(input_path, msa_row_num)
-    msa_seq = ''
+
+    msa_seq = ['E']
     query_seq = aminoAcid
     
-    msa_row_num = len(msa_seq)
+    msa_row_num = 1
     msa_col_num = len(query_seq)
 
     print(f"msa row number: {msa_row_num}")
     print(f"msa column number: {msa_col_num}")
-
+    
 
     msa_query_representation, msa_row_attentions = extract_msa_transformer_features(msa_seq,
                                                                                     msa_transformer,
@@ -304,8 +306,10 @@ def get_msa_transformer_prediction(aminoAcid):
 
     print("===================================")
     print("Done")
+    print(msa_query_representation)
     print("===================================")
     
+
     return output_property_softmax_np_argmax
     
     #out_ss_json_path = output_path + '.ss.json'
