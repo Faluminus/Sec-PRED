@@ -91,7 +91,7 @@ class lstm_net(nn.Module):
             msa_attention_features = msa_attention_features.permute((0, 2, 1))
 
             lstm_input = torch.cat([msa_query_embeddings, msa_attention_features], dim=2)
-
+        
         else:
             lstm_input = msa_query_embeddings
 
@@ -199,7 +199,7 @@ def save_ss_to_json(out_ss_json, output_ss_np_argmax, query_seq):
     with open(out_ss_json, "w") as f:
         # json.dump(json_dict, f)
         json.dump(json_dict, f, indent=4)
-    
+
 def get_msa_transformer_prediction(aminoAcid):
     #input_path = 'examples/s_pred_ss.a3m'
     #output_path = 's_pred_ss.out'
@@ -279,7 +279,7 @@ def get_msa_transformer_prediction(aminoAcid):
     #else:
     #msa_seq, query_seq = read_msa_file(input_path, msa_row_num)
 
-    msa_seq = ['E']
+    msa_seq = ['ACATA','ACATA']
     query_seq = aminoAcid
     
     msa_row_num = 1
@@ -306,14 +306,14 @@ def get_msa_transformer_prediction(aminoAcid):
 
     print("===================================")
     print("Done")
-    print(msa_query_representation)
     print("===================================")
-    
 
-    return output_property_softmax_np_argmax
+    output_ss_char_list = [SS_IND2CHAR[ind] for ind in output_property_softmax_np_argmax.tolist()]
+
+    return output_ss_char_list
     
     #out_ss_json_path = output_path + '.ss.json'
 
     #save_ss_to_json(out_ss_json_path, output_property_softmax_np_argmax, query_seq)
 
-    
+

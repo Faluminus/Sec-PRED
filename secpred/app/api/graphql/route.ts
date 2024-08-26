@@ -16,6 +16,9 @@ const typeDefs = gql`
   }
 `;
 
+interface SecStructureResponse {
+  secStructure: string[];
+}
 
 const resolvers = {
   Query: {
@@ -45,8 +48,8 @@ const resolvers = {
               },
               body: JSON.stringify({ "AC": aminoAcidSeq }),
           });
-          const secStructureSeq = await response.text();
-          return secStructureSeq;
+          const secStructureSeq = await response.json() as SecStructureResponse;
+          return secStructureSeq.secStructure.join('');
       } catch (error) {
           console.error(error);
           return null;

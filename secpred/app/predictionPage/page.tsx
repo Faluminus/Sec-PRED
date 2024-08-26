@@ -116,7 +116,7 @@ const PredictionPage = () =>{
                         <span className="loading loading-spinner text-info w-[3vw]"></span>
                         </div>
                         :
-                        <p>{secStructureSeq}</p>
+                        <p className='my-[2vh] mx-[1vw] text-blue-500'>{secStructureSeq}</p>
                         }
                     </div>
                     <div className="shadow-2xl rounded-2xl flex flex-col bg-white p-5 mt-1 h-[30vh]">
