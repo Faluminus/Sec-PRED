@@ -296,7 +296,7 @@ def get_msa_transformer_prediction(aminoAcid):
     
     msa_query_representation.to(device)
     msa_row_attentions.to(device)
-
+    
     output_property = conv_model(msa_query_representation, msa_row_attentions)
     output_property = output_property.permute((0, 2, 1))
     

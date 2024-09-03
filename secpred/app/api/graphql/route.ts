@@ -28,8 +28,13 @@ const resolvers = {
             method:"GET",
             mode:"cors",
         })
-        .then((response)=>{
-            return response.text()
+        .then(async (response)=>{
+            const data_splited = (await response.text()).split('\n');
+            for(let row of data_splited){
+              if(row.split('')[0] != '>'){
+                return row;
+              }
+            }
         })
         .catch((exception)=>{
             console.log(exception)

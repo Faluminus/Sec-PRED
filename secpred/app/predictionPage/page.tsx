@@ -11,7 +11,7 @@ const PredictionPage = () =>{
     const [proteinID,setProteinID] = useState<string>()
     const [aminoAcidSeq,setAminoAcidSeq] = useState<string>()
     const [secStructureSeq,setSecStructureSeq] = useState<string>()
-
+    const [numOfAminoAcids,setNumOfAminoAcids] = useState<number>()
 
 
     const [loading,setLoading] = useState<boolean>(false)
@@ -25,6 +25,15 @@ const PredictionPage = () =>{
         cache: new InMemoryCache(),
     });
     
+    useEffect(()=>{
+        if(aminoAcidSeq != null){
+            setNumOfAminoAcids(aminoAcidSeq?.length)
+        }
+        else{
+            setNumOfAminoAcids(0)
+        }
+    },[aminoAcidSeq])
+
     const handlePrediction = async()=>{
 
         setLoading(true)
@@ -100,6 +109,7 @@ const PredictionPage = () =>{
                             }
                         </div>
                     </div>
+                    
                     <div className="shadow-2xl rounded-2xl w-[100%] h-[20%] bg-white p-4">
                         <textarea value={aminoAcidSeq} onChange={(e)=>{setAminoAcidSeq(e.target.value)}} className="w-full h-full p-2 border rounded-md font-[200] resize-none" rows={4} cols={50} placeholder="Amino acid seq...">
                         </textarea>
@@ -109,7 +119,11 @@ const PredictionPage = () =>{
                             </button>
                         </div>
                     </div>
-                    <div className="shadow-2xl rounded-2xl flex flex-col bg-white p-5 mt-12 h-[30vh]">
+                    <div className='flex flex-col'>
+                        <p>Total amino acids: <span className='font-[700]'>{numOfAminoAcids}</span></p>
+                        <p>Maximal handled amout: <span className='font-[700] text-red-500'>200</span></p>
+                    </div>
+                    <div className="shadow-2xl rounded-2xl flex flex-col bg-white p-5 mt-10 h-[30vh]">
                         <p>Sec<span className='font-[700]'>PRED</span><span className='font-[200]'>-String</span></p>
                         {loading ? 
                         <div className='flex items-center justify-center w-full h-full'>
@@ -131,7 +145,9 @@ const PredictionPage = () =>{
                         </Canvas>
                         }
                     </div>
+                    
                 </div>
+                
                 <div className="bg-white shadow-2xl rounded-2xl w-[65vw] h-full p-5">
                     <p>SWISS-MODEL</p>
                     {loading ? 
