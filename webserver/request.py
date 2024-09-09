@@ -13,7 +13,7 @@ class HTTPRequests(BaseHTTPRequestHandler):
         self.model = TaskModel()
         self.controller = TaskController(self.model)
         super().__init__(request, client_address, server)
-
+    
     def do_POST(self):
         content_length = int(self.headers['Content-Length'])
         post_data = self.rfile.read(content_length)
@@ -31,12 +31,12 @@ class HTTPRequests(BaseHTTPRequestHandler):
             secStructure = self.controller.predict_sec_strucuture(data)
         else:
             secStructure = json.dumps({'error': 'Invalid or missing AC value'})
-        
+
         self.send_response(200)
         self.send_header("Content-type", "application/json")
         self.end_headers()
         self.wfile.write(bytes(json.dumps({'secStructure': secStructure}), 'utf-8'))
-
+        
         
             
 
@@ -48,6 +48,6 @@ if __name__ == "__main__":
         webServer.serve_forever()
     except KeyboardInterrupt:
         pass
-
+     
     webServer.server_close()
     print("Server stopped.")

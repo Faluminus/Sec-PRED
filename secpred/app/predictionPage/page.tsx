@@ -5,6 +5,7 @@ import { } from '@react-three/drei';
 import {useState,useEffect,useRef} from 'react';
 import { gql } from '@apollo/client';
 import { ApolloClient, InMemoryCache } from '@apollo/client';
+import { Toaster, toast } from 'sonner'
 
 const PredictionPage = () =>{
 
@@ -92,6 +93,18 @@ const PredictionPage = () =>{
         }
     }
     return(<>
+            <Toaster
+                theme="light"
+                position="top-right"
+                toastOptions={{
+                style: {
+                    background: 'bg-blue-400',
+                    color: '#0369a1',
+                    border: '1px solid #e0f2fe',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                },
+                }}
+            />
             <div className="w-screen h-screen p-10 pb-[55px] flex flex-row bg-gray-100 gap-4">
                 <div className="flex flex-col h-[100%] w-[50vw] gap-3">
                     <div className='w-[50px] h-[50px]'>
@@ -114,7 +127,7 @@ const PredictionPage = () =>{
                         <textarea value={aminoAcidSeq} onChange={(e)=>{setAminoAcidSeq(e.target.value)}} className="w-full h-full p-2 border rounded-md font-[200] resize-none" rows={4} cols={50} placeholder="Amino acid seq...">
                         </textarea>
                         <div className='flex w-full justify-end'>
-                            <button  onClick={handlePrediction} className='w-[400px] h-[30px] bg-blue-400 rounded-2xl text-white shadow-2xl transition duration-200 hover:shadow-black hover:scale-x-[1.03]'>
+                            <button  onClick={()=> {handlePrediction; toast('Custom Toast', {icon: '🚀',description: 'This is a custom toast notification'}) }} className='w-[400px] h-[30px] bg-blue-400 rounded-2xl text-white shadow-2xl transition duration-200 hover:shadow-black hover:scale-x-[1.03]'>
                                 Predict
                             </button>
                         </div>
