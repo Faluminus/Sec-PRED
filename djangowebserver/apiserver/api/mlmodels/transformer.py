@@ -9,14 +9,14 @@ src_vocab_size = 22
 tgt_vocab_size = 32
 max_seq_length = 500
 d_model = 512
-d_ff = 2048
+d_ff = 1024
 num_heads = 8
-num_layers = 5
+num_layers = 2
 dropout = 0
 
 #-------------------------PATHS----------------------#
 
-model_state_dict = ''
+model_state_dict = './api/mlmodels/modelstates/transformer_model.pth'
 
 #-------------------------OUTPUT_CONVERGENCE----------------------#
 dssp8_structures = {
@@ -194,8 +194,9 @@ class TransformerPredict(nn.Module):
     translate_to_secondary_structure(): is expected to be used as follow up for start(), converts number presentation to dssp8 format and returns 
     """
     def __init__(self,input_):
+        super(TransformerPredict,self).__init__()
         self.transformer = Transformer(src_vocab_size, tgt_vocab_size, d_model,num_heads, num_layers,d_ff, max_seq_length, dropout)
-        self.transformer.load_state_dict(torch.load(model_state_dict))
+        self.transformer.load_state_dict(torch.load(model_state_dict,weights_only=True))
         self.input = input_
         self.indices
     def start(self):

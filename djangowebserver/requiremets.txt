@@ -1,5 +1,0 @@
-django
-djangorestframework
-environs
-torch
-pandas

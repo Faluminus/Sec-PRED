@@ -6,10 +6,13 @@ from .serializers import TransformerSerializer
 import json
 
 
-@api_view(['POST'])
+@api_view(['POST','GET'])
 def PredictWithTransformer(request):
     """Gets prediction using TransformerPredict module"""
 
+    if request.method == 'GET':
+        return Response(status=200)
+    
     input_ = json.loads(request.data)
     serializer = TransformerSerializer(input_)
     try:
@@ -20,5 +23,5 @@ def PredictWithTransformer(request):
         return Response(output,status=201)
     except:
         return Response(status=442)
-
+    
 
