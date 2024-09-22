@@ -106,7 +106,11 @@ def Q8_score(hypothesis,references):
     references =''.join(references[5:]).replace(' ', '')
     references = references[:references.index('<eos>')]
     reference_len = len(references)
-    hypothesis =hypothesis[:hypothesis.index('<eos>')].replace(' ','')
+    if '<eos>' in hypothesis:
+        hypothesis = hypothesis[:hypothesis.index('<eos>')].replace(' ','')
+    else:
+        hypothesis = hypothesis.replace(' ','')
+
     for i,(x,y) in enumerate(zip(references,hypothesis)):
       if x != y:
         mistakes += 1
@@ -170,7 +174,7 @@ for epoch in range(200):
       loss.backward()
       print(loss)
       torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.25)
-      optimizer.step()   
+      optimizer.step()
       total_loss += loss.item()
   model.eval()
   scores = []
