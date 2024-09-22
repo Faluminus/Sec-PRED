@@ -11,6 +11,7 @@ from sklearn.model_selection import train_test_split
 tokenizer = AutoTokenizer.from_pretrained("facebook/esm2_t6_8M_UR50D")
 
 
+
 class PositionalEncoding(nn.Module):
     
     def __init__(self, d_model, dropout=0.1, max_len=5000):
@@ -93,14 +94,10 @@ def add_token(start_token,output,position):
 
 def batch_decode(output):
     """Converts batch of output values into tokens"""
-    decoded = torch.tensor([0]).repeat(500,33).to(device)
-    print(decoded)
-    print(output)
+    decoded = []
     for seq in output:
-        print(seq)
-        print(tokenizer.decode(seq))
-        decoded = torch.stack((decoded,tokenizer.decode(seq)))
-    return decoded[:0]
+        decoded.append(torch.argmax(seq,dim=1).unsqueeze(0))
+    return torch.cat(decoded, dim=0)
         
 
 def Q8_score(hypothesis,references):
