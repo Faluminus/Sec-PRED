@@ -62,7 +62,7 @@ class TransformerModel(nn.Module):
         mask = torch.triu(torch.ones(sz, sz) * float('-inf'), diagonal=1)
         return mask
 
-    def forward(self, src, tgt, src_mask=None, tgt_mask=None, padding_mask=1):
+    def forward(self, src, tgt, src_mask=None, tgt_mask=None):
         
         if src_mask is None:
             src_mask = torch.zeros((src.size(0), src.size(0))).to(src.device).type(torch.bool)
@@ -73,14 +73,14 @@ class TransformerModel(nn.Module):
         src_padding_mask = (src == tokenizer.pad_token_id).T.to(src.device)
         tgt_padding_mask = (tgt == tokenizer.pad_token_id).T.to(tgt.device)
         
-
         src = self.input_emb(src) * math.sqrt(self.ninp)
         src = self.pos_encoder(src)
         tgt = self.tgt_emb(tgt) * math.sqrt(self.ninp)
         tgt = self.pos_decoder(tgt)
-
-        memory = self.transformer.encoder(src, src_mask)
-        output = self.transformer.decoder(tgt, memory, tgt_mask=tgt_mask, memory_mask=src_mask)
+      
+        memory = self.transformer.encoder(src,src_mask)
+        
+        output = self.transformer.decoder(tgt, memory, tgt_mask=tgt_mask , memory_mask=src_mask)
         output = self.decoder(output) 
         return F.log_softmax(output,dim=-1)
 
@@ -140,10 +140,9 @@ patience=5
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-data = pd.read_csv("./data.csv")
+data = pd.read_csv("C:/Users/semra/Documents/MyPrograms/Sec-PRED/data/raw/data.csv")
 src_data = tokenize_data(data['input'])
 tgt_data = tokenize_data(data['dssp8'])
-
 
 
 src_data_train, src_data_test, tgt_data_train , tgt_data_test = train_test_split(src_data['input_ids'], tgt_data['input_ids'], test_size=0.20, random_state=42)
@@ -170,6 +169,7 @@ for epoch in range(200):
       optimizer.zero_grad()
       output = model(data,targets)
       output = output.view(-1,ntokens)
+      print(output)
       loss = criterion(output, targets.view(-1))
       loss.backward()
       print(loss)
