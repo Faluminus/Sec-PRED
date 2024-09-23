@@ -62,7 +62,7 @@ class TransformerModel(nn.Module):
         mask = torch.triu(torch.ones(sz, sz) * float('-inf'), diagonal=1)
         return mask
 
-    def forward(self, src, tgt, src_mask=None, tgt_mask=None, padding_mask=1):
+    def forward(self, src, tgt, src_mask=None, tgt_mask=None):
         
         if src_mask is None:
             src_mask = torch.zeros((src.size(0), src.size(0))).to(src.device).type(torch.bool)
@@ -70,17 +70,19 @@ class TransformerModel(nn.Module):
             tgt_mask = self._generate_square_subsequent_mask(tgt.size(0)).to(tgt.device)
 
         
-        src_padding_mask = (src == tokenizer.pad_token_id).T.to(src.device)
-        tgt_padding_mask = (tgt == tokenizer.pad_token_id).T.to(tgt.device)
-        
+        src_padding_mask = (src == tokenizer.pad_token_id).T.to(src.device).float()
+        tgt_padding_mask = (tgt == tokenizer.pad_token_id).T.to(tgt.device).float()
 
+        src_padding_mask = src_padding_mask * (-1e9) + (1-src_padding_mask)
+        tgt_padding_mask = tgt_padding_mask * (-1e9) + (1-tgt_padding_mask)
+        
         src = self.input_emb(src) * math.sqrt(self.ninp)
         src = self.pos_encoder(src)
         tgt = self.tgt_emb(tgt) * math.sqrt(self.ninp)
         tgt = self.pos_decoder(tgt)
 
-        memory = self.transformer.encoder(src, src_mask)
-        output = self.transformer.decoder(tgt, memory, tgt_mask=tgt_mask, memory_mask=src_mask)
+        memory = self.transformer.encoder(src, src_mask,src_key_padding_mask=src_padding_mask)
+        output = self.transformer.decoder(tgt, memory, tgt_mask=tgt_mask, memory_mask=src_mask,tgt_key_padding_mask=tgt_padding_mask,memory_key_padding_mask=src_padding_mask)
         output = self.decoder(output) 
         return F.log_softmax(output,dim=-1)
 
@@ -98,7 +100,7 @@ def batch_decode(output):
     for seq in output:
         decoded.append(torch.argmax(seq,dim=1).unsqueeze(0))
     return torch.cat(decoded, dim=0)
-        
+    
 
 def Q8_score(hypothesis,references):
     """Simple accuracy mesure , percentual similarity to reference"""
@@ -130,7 +132,7 @@ layers = 2
 dropout = 0.3
 
 #Optimizer params
-lr = 0.1
+lr = 0.001
 weight_decay = 1e-4
 
 #Sheduler params
@@ -160,6 +162,7 @@ criterion = nn.CrossEntropyLoss(ignore_index=1)
 optimizer = optim.Adadelta(model.parameters(), lr=lr, rho=0.9, eps=1e-06, weight_decay=weight_decay)
 sheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode=mode, factor=factor, patience=patience)
 
+print(tokenizer.pad_token_id)
 
 for epoch in range(200):
   model.train()
@@ -170,7 +173,7 @@ for epoch in range(200):
       optimizer.zero_grad()
       output = model(data,targets)
       output = output.view(-1,ntokens)
-      loss = criterion(output, targets.view(-1))
+      loss = criterion(output, targets.view(-1))#.view(-1))
       loss.backward()
       print(loss)
       torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.25)
@@ -185,15 +188,15 @@ for epoch in range(200):
             tgt_data_val = tgt_data_val.to(device)
             
             seq = torch.cat((torch.tensor([0]).unsqueeze(0).repeat(32,1),torch.tensor([1]).unsqueeze(0).repeat(32,499)),dim=1).to(device)
-            
             for x in range(500):
                 output = model(src_data_val,seq)
                 tokenized_batch = batch_decode(output)
                 seq = add_token(seq,tokenized_batch,x)
-            for prediction, target in zip(output, tgt_data_val):
+                
+            for prediction, target in zip(seq, tgt_data_val):
                 score = Q8_score(tokenizer.decode(torch.argmax(prediction,dim=1), dim=1),tokenizer.decode(target))
                 scores.append(score)
-
+    
     percentual_score = sum(scores) / len(scores)
     
   print(f"Epoch:{epoch} Validation Q8 Score: {percentual_score} Learning rate: {optimizer.param_groups[0]['lr']}")
