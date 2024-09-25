@@ -122,7 +122,7 @@ def Q8_score(hypothesis,references):
     accuracy = 1 - (mistakes/reference_len)
     return accuracy
 
-def tokenize_data(data):
+def tokenize_data(data,max_seq_length):
         return tokenizer(list(data), return_tensors="pt", padding=True, truncation=True,max_length=500)
 
 
@@ -143,11 +143,14 @@ mode = 'max'
 factor = 0.1
 patience=5
 
+#Data params
+max_seq_length = 800
+
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-data = pd.read_csv("C:/Users/semra/Documents/MyPrograms/Sec-PRED/data/raw/data.csv")
-src_data = tokenize_data(data['input'])
-tgt_data = tokenize_data(data['dssp8'])
+data = pd.read_csv("C:/Users/semra/Documents/MyPrograms/Sec-PRED/data/raw/AMINtoSEC.csv")
+src_data = tokenize_data(data['AminoAcidSeq'],max_seq_length)
+tgt_data = tokenize_data(data['SecondaryStructureSeq'],max_seq_length)
 
 
 src_data_train, src_data_test, tgt_data_train , tgt_data_test = train_test_split(src_data['input_ids'], tgt_data['input_ids'], test_size=0.20, random_state=42)
@@ -176,7 +179,7 @@ for epoch in range(200):
       output = model(data,targets)
       output = output.view(-1,ntokens)
 
-      loss = criterion(output, targets.view(-1)))
+      loss = criterion(output, targets.view(-1))
 
       loss.backward()
       print(loss)
@@ -191,14 +194,14 @@ for epoch in range(200):
             src_data_val = src_data_val.to(device)
             tgt_data_val = tgt_data_val.to(device)
             
-            seq = torch.cat((torch.tensor([0]).unsqueeze(0).repeat(32,1),torch.tensor([1]).unsqueeze(0).repeat(32,499)),dim=1).to(device)
-            for x in range(500):
+            seq = torch.cat((torch.tensor([0]).unsqueeze(0).repeat(32,1),torch.tensor([1]).unsqueeze(0).repeat(32,max_seq_length-1)),dim=1).to(device)
+            for x in range(max_seq_length):
                 output = model(src_data_val,seq)
                 tokenized_batch = batch_decode(output)
                 seq = add_token(seq,tokenized_batch,x)
                 
             for prediction, target in zip(seq, tgt_data_val):
-                score = Q8_score(tokenizer.decode(torch.argmax(prediction,dim=1), dim=1),tokenizer.decode(target))
+                score = Q8_score(tokenizer.decode(prediction),tokenizer.decode(target))
                 scores.append(score)
     
     percentual_score = sum(scores) / len(scores)
