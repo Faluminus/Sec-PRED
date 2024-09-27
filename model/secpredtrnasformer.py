@@ -3,18 +3,17 @@ import torch.nn as nn
 import torch.nn.functional as F
 import math
 import numpy as np
-import pandas as pd
 from torch.utils.data import DataLoader
 import torch.optim as optim
-from transformers import AutoTokenizer
 from sklearn.model_selection import train_test_split
-tokenizer = AutoTokenizer.from_pretrained("facebook/esm2_t6_8M_UR50D")
+import pandas as pd
+from transformers import AutoTokenizer
 
 
 
 class PositionalEncoding(nn.Module):
-    
-    def __init__(self, d_model, dropout=0.1, max_len=5000):
+
+    def __init__(self, d_model, dropout=0.1, max_len=800):
         super(PositionalEncoding, self).__init__()
         self.dropout = nn.Dropout(p=dropout)
 
@@ -27,24 +26,24 @@ class PositionalEncoding(nn.Module):
         self.register_buffer('pe', pe)
 
     def forward(self, x):
-        
+
         x = x + self.pe[:x.size(0), :]
         return self.dropout(x)
 
 class TransformerModel(nn.Module):
-    def __init__(self, ntoken, ninp, nhead, nhid, nlayers, dropout=0.3):
+    def __init__(self, ntoken, ninp, nhead, nhid, nlayers, dropout=0.3,max_len=800):
         super(TransformerModel, self).__init__()
         self.model_type = 'Transformer'
         self.src_mask = None
         self.tgt_mask = None
 
-        self.pos_encoder = PositionalEncoding(ninp, dropout)
-        self.pos_decoder = PositionalEncoding(ninp, dropout)  
+        self.pos_encoder = PositionalEncoding(ninp, dropout,max_len)
+        self.pos_decoder = PositionalEncoding(ninp, dropout,max_len)
 
         self.input_emb = nn.Embedding(ntoken, ninp)
-        self.tgt_emb = nn.Embedding(ntoken, ninp)  
+        self.tgt_emb = nn.Embedding(ntoken, ninp)
 
-        self.transformer = nn.Transformer(d_model=ninp, nhead=nhead, dim_feedforward=nhid, num_encoder_layers=nlayers, num_decoder_layers=nlayers)
+        self.transformer = nn.Transformer(d_model=ninp, nhead=nhead, dim_feedforward=nhid, num_encoder_layers=nlayers, num_decoder_layers=nlayers,batch_first=True)
 
         self.ninp = ninp
         self.decoder = nn.Linear(ninp, ntoken)
@@ -63,36 +62,36 @@ class TransformerModel(nn.Module):
         return mask
 
     def forward(self, src, tgt, src_mask=None, tgt_mask=None):
-        
+
         if src_mask is None:
-            src_mask = torch.zeros((src.size(0), src.size(0))).to(src.device).type(torch.bool)
+          src_mask = torch.zeros((src.size(1), src.size(1)), dtype=torch.bool).to(src.device)
         if tgt_mask is None:
-            tgt_mask = self._generate_square_subsequent_mask(tgt.size(0)).to(tgt.device)
+          tgt_mask = self._generate_square_subsequent_mask(tgt.size(1)).to(tgt.device).type(torch.bool)
 
-        
 
-        src_padding_mask = (src == tokenizer.pad_token_id).T.to(src.device).float()
-        tgt_padding_mask = (tgt == tokenizer.pad_token_id).T.to(tgt.device).float()
 
-        src_padding_mask = src_padding_mask * (-1e9) + (1-src_padding_mask)
-        tgt_padding_mask = tgt_padding_mask * (-1e9) + (1-tgt_padding_mask)
 
-        
+        src_padding_mask = (src == tokenizer.pad_token_id).to(src.device)
+        tgt_padding_mask = (tgt == tokenizer.pad_token_id).to(tgt.device)
+
+
         src = self.input_emb(src) * math.sqrt(self.ninp)
         src = self.pos_encoder(src)
         tgt = self.tgt_emb(tgt) * math.sqrt(self.ninp)
         tgt = self.pos_decoder(tgt)
 
-        memory = self.transformer.encoder(src, src_mask,src_key_padding_mask=src_padding_mask)
-        output = self.transformer.decoder(tgt, memory, tgt_mask=tgt_mask, memory_mask=src_mask,tgt_key_padding_mask=tgt_padding_mask,memory_key_padding_mask=src_padding_mask)
+        memory = self.transformer.encoder(src,src_key_padding_mask=src_padding_mask)
+        output = self.transformer.decoder(tgt, memory, memory_mask=src_mask,tgt_key_padding_mask=tgt_padding_mask,memory_key_padding_mask=src_padding_mask)
 
-        output = self.decoder(output) 
+
+
+        output = self.decoder(output)
         return F.log_softmax(output,dim=-1)
 
 
-def add_token(start_token,output,position):
+def add_token(start_token,output,position,max_seq_len,batch_size):
     """Combines output and start token , used if autoregression is needed"""
-    mask = torch.tensor([True if x <= position else False for x in range(500)]).unsqueeze(0).repeat(32,1)
+    mask = torch.tensor([True if x <= position else False for x in range(max_seq_len)]).unsqueeze(0).repeat(batch_size,tokenizer.cls_token_id)
     indices = mask.nonzero(as_tuple=True)
     start_token[indices] = output[indices]
     return start_token
@@ -103,7 +102,7 @@ def batch_decode(output):
     for seq in output:
         decoded.append(torch.argmax(seq,dim=1).unsqueeze(0))
     return torch.cat(decoded, dim=0)
-    
+
 
 def Q8_score(hypothesis,references):
     """Simple accuracy mesure , percentual similarity to reference"""
@@ -119,24 +118,25 @@ def Q8_score(hypothesis,references):
     for i,(x,y) in enumerate(zip(references,hypothesis)):
       if x != y:
         mistakes += 1
+
+    print(mistakes)
+    print(len(hypothesis))
+    print(reference_len)
     accuracy = 1 - (mistakes/reference_len)
     return accuracy
-
-def tokenize_data(data,max_seq_length):
-        return tokenizer(list(data), return_tensors="pt", padding=True, truncation=True,max_length=500)
 
 
 
 #Transformer hyperparams
 d_model = 512
-d_heads = 4
+d_heads = 8
 d_ff = 2048
 layers = 2
 dropout = 0.3
 
 #Optimizer params
 lr = 0.001
-weight_decay = 1e-4
+weight_decay = 0.0001
 
 #Sheduler params
 mode = 'max'
@@ -144,68 +144,91 @@ factor = 0.1
 patience=5
 
 #Data params
-max_seq_length = 800
+max_seq_length = 500
+batch_size = 64
 
+
+def tokenize_data(data):
+        return tokenizer(list(data), return_tensors="pt", padding=True, truncation=True,max_length=500)
+tokenizer = AutoTokenizer.from_pretrained("facebook/esm2_t6_8M_UR50D")
+data = pd.read_csv("/content/drive/MyDrive/AMINtoSEC.csv")
+src_data = tokenize_data(data['AminoAcidSeq'])
+tgt_data = tokenize_data(data['SecondaryStructureSeq'])
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-data = pd.read_csv("C:/Users/semra/Documents/MyPrograms/Sec-PRED/data/raw/AMINtoSEC.csv")
-src_data = tokenize_data(data['AminoAcidSeq'],max_seq_length)
-tgt_data = tokenize_data(data['SecondaryStructureSeq'],max_seq_length)
+
 
 
 src_data_train, src_data_test, tgt_data_train , tgt_data_test = train_test_split(src_data['input_ids'], tgt_data['input_ids'], test_size=0.20, random_state=42)
 
 split_idx = int(0.8 * len(src_data_train))
-trainloader = DataLoader(list(zip(src_data_train[:split_idx], tgt_data_train[:split_idx])), batch_size=32, shuffle=True)
-valloader = DataLoader(list(zip(src_data_train[split_idx:], tgt_data_train[split_idx:])), batch_size=32, shuffle=True)
+trainloader = DataLoader(list(zip(src_data_train[:split_idx], tgt_data_train[:split_idx])), batch_size=batch_size, shuffle=True)
+valloader = DataLoader(list(zip(src_data_train[split_idx:], tgt_data_train[split_idx:])), batch_size=batch_size, shuffle=True)
 
 
 
 
-model = TransformerModel(tokenizer.vocab_size,d_model,d_heads,d_ff,layers,dropout).to(device)
+model = TransformerModel(tokenizer.vocab_size,d_model,d_heads,d_ff,layers,dropout,max_seq_length).to(device)
 criterion = nn.CrossEntropyLoss(ignore_index=1)
-optimizer = optim.Adadelta(model.parameters(), lr=lr, rho=0.9, eps=1e-06, weight_decay=weight_decay)
+optimizer = optim.AdamW(model.parameters(), lr=lr, eps=1e-6, weight_decay=weight_decay)
 sheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode=mode, factor=factor, patience=patience)
 
-print(tokenizer.pad_token_id)
+
+
 
 for epoch in range(200):
   model.train()
   total_loss = 0.
   ntokens = tokenizer.vocab_size
-  for i,batch in enumerate(trainloader):
-      data, targets = batch[0].to(device),batch[1].to(device)
-      optimizer.zero_grad()
-      output = model(data,targets)
-      output = output.view(-1,ntokens)
+  for i, batch in enumerate(trainloader):
+      data, targets = batch[0].to(device), batch[1].to(device)
 
-      loss = criterion(output, targets.view(-1))
+      tgt_input = torch.full((data.size(0), max_seq_length), tokenizer.cls_token_id, device=device).to(device)
 
-      loss.backward()
+
+      teacher_forcing_ratio = 0.75
+      for t in range(max_seq_length):
+          output = model(data, tgt_input)
+
+          if torch.rand(1).item() < teacher_forcing_ratio:
+              tgt_input = tgt_input.clone()
+              tgt_input[:, t] = targets[:, t]
+          else:
+              tgt_input = tgt_input.clone()
+              tgt_input[:, t] = output[:,t,:].argmax(dim=1)
+
+      loss = criterion(output.view(-1, ntokens), targets.view(-1))
       print(loss)
+      loss.backward()
+
       torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.25)
       optimizer.step()
+      optimizer.zero_grad()
       total_loss += loss.item()
+
   model.eval()
   scores = []
   with torch.no_grad():
-    for i, batch in enumerate(valloader):
-            src_data_val, tgt_data_val = batch
-            src_data_val = src_data_val.to(device)
-            tgt_data_val = tgt_data_val.to(device)
-            
-            seq = torch.cat((torch.tensor([0]).unsqueeze(0).repeat(32,1),torch.tensor([1]).unsqueeze(0).repeat(32,max_seq_length-1)),dim=1).to(device)
-            for x in range(max_seq_length):
-                output = model(src_data_val,seq)
-                tokenized_batch = batch_decode(output)
-                seq = add_token(seq,tokenized_batch,x)
-                
-            for prediction, target in zip(seq, tgt_data_val):
-                score = Q8_score(tokenizer.decode(prediction),tokenizer.decode(target))
-                scores.append(score)
-    
-    percentual_score = sum(scores) / len(scores)
-    
+      for i, batch in enumerate(valloader):
+          src_data_val, tgt_data_val = batch
+          src_data_val = src_data_val.to(device)
+          tgt_data_val = tgt_data_val.to(device)
+
+          tgt_input = torch.full((batch.size(0), max_seq_length), tokenizer.cls_token_id, device=device)
+
+          for t in range(max_seq_length):
+              output = model(src_data_val, tgt_input)
+              tgt_input = tgt_input.clone()
+              tgt_input[:, t] = output[:,t,:].argmax(dim=1)
+          torch.save(model.state_dict(),'/content/drive/MyDrive/diffmodelComplex.pth')
+
+
+          for prediction, target in zip(tgt_input, tgt_data_val):
+              score = Q8_score(tokenizer.decode(prediction), tokenizer.decode(target))
+              scores.append(score)
+
+      percentual_score = sum(scores) / len(scores)
+
   print(f"Epoch:{epoch} Validation Q8 Score: {percentual_score} Learning rate: {optimizer.param_groups[0]['lr']}")
   sheduler.step(percentual_score)
-  torch.save(model.state_dict(),'diffmodelComplex.pth')
+
