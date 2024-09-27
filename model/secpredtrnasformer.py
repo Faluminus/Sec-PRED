@@ -126,10 +126,6 @@ def Q8_score(hypothesis,references):
     return accuracy
 
 
-def tokenize_data(data):
-        return tokenizer(list(data), return_tensors="pt", padding=True, truncation=True,max_length=500)
-
-
 
 #Transformer hyperparams
 d_model = 512
@@ -152,6 +148,8 @@ max_seq_length = 500
 batch_size = 64
 
 
+def tokenize_data(data):
+        return tokenizer(list(data), return_tensors="pt", padding=True, truncation=True,max_length=500)
 tokenizer = AutoTokenizer.from_pretrained("facebook/esm2_t6_8M_UR50D")
 data = pd.read_csv("/content/drive/MyDrive/AMINtoSEC.csv")
 src_data = tokenize_data(data['AminoAcidSeq'])
@@ -232,5 +230,5 @@ for epoch in range(200):
       percentual_score = sum(scores) / len(scores)
 
   print(f"Epoch:{epoch} Validation Q8 Score: {percentual_score} Learning rate: {optimizer.param_groups[0]['lr']}")
-  scheduler.step(percentual_score)
+  sheduler.step(percentual_score)
 
