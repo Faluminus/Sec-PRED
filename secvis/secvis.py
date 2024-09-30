@@ -1,5 +1,6 @@
 import numpy as np
 import math
+
 class SecVis():
     """Returns tensor with coordinates for each structure"""
     def __init__(self,secondaryStructure:str):
@@ -22,6 +23,7 @@ class Drawers():
             y_pos = math.sin(x_pos/(self.x_axis/2*math.pi*num_waves))*d_y
             y_coordinations.append(y_pos)
         return y_coordinations , "red"
+    
     def BetaBridge(self) ->  tuple[np.ndarray, str]:
         pass
 
