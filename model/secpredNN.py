@@ -42,8 +42,6 @@ model = tf.keras.Sequential([
     tf.keras.layers.Dense(1024, activation='relu' ),
     tf.keras.layers.Dense(512, activation='softmax' ),
 ])
-model.compile(optimizer='adam',
-              loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-              metrics=['accuracy'])
-model.fit(np.array(src_input_ids), np.array(tgt_input_ids), epochs=1000)
+
+
     
