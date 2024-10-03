@@ -25,6 +25,9 @@ class Drawers():
         self.y_axis = resolution[1]
  
     def AlphaHelix(self,num_waves:int) ->  tuple[np.ndarray, str]:
+        """Represented via sinus wave \n
+        num_waves: integer (number of waves inside addded resolution)
+        """
         d_y = self.y_axis /2
         y_coordinations = []
         for x_pos in range(self.x_axis):
@@ -32,12 +35,20 @@ class Drawers():
             y_coordinations.append(y_pos)
         return y_coordinations , "red"
     
-    def BetaBridge(self) ->  tuple[np.ndarray, str]:
+    def BetaBridge(self,arrow_height:int,arrow_width:int) ->  tuple[np.ndarray, str]:
+        """Represented as arow shape \n
+        arrow_height: height of triangular shape on end of line \n
+        arrow_width: width of triangular shape on end of line
+        """
         d_y = self.y_axis /2
         y_coordinations = []
-        for x_pos in range(self.x_axis):
-            y_pos = 0
-            y_coordinations.append(y_pos)
+        for x_pos in range(self.x_axis - arrow_width):
+            y_coordinations.append(d_y)
+        for y_pos in range(self.x_axis - arrow_width,self.x_axis):
+            for x_pos in range(arrow_height/2,self.y_axis - arrow_height/2):
+                
+                                
+
         return y_coordinations,"green"
         
 
@@ -57,6 +68,9 @@ class Drawers():
         pass
 
     def Bend(self) ->  tuple[np.ndarray, str]:
+        pass
+    def Thicken(self,thicken_by:int) -> np.ndarray:
+
         pass
 
 
