@@ -1,6 +1,6 @@
 import numpy as np
 import math
-import matplotlib as mp 
+
 
 
 class SecVis():
@@ -23,35 +23,39 @@ class Drawers():
         
         self.x_axis = resolution[0]
         self.y_axis = resolution[1]
- 
+        self.xy_coordinations
+
+    def __str__(self):
+        return self.xy_coordinations
+
     def AlphaHelix(self,num_waves:int) ->  tuple[np.ndarray, str]:
         """Represented via sinus wave \n
         num_waves: integer (number of waves inside addded resolution)
         """
         d_y = self.y_axis /2
-        y_coordinations = []
+        xy_coordinations = []
         for x_pos in range(self.x_axis):
             y_pos = math.sin(x_pos/(self.x_axis/2*math.pi*num_waves))*d_y
-            y_coordinations.append(y_pos)
-        return y_coordinations , "red"
+            xy_coordinations.append([x_pos,y_pos])
+        return xy_coordinations , "red"
     
     def BetaBridge(self,arrow_height:int,arrow_width:int) ->  tuple[np.ndarray, str]:
         """Represented as arow shape \n
         arrow_height: height of triangular shape on end of line \n
         arrow_width: width of triangular shape on end of line
         """
+        assert arrow_height <= self.y_axis , "Arrow height cant be bigger than y_axis"
+        assert arrow_width <= self.x_axis , "Arrow widht cant be bigger than x_axis "
+
         d_y = self.y_axis /2
-        y_coordinations = []
+        xy_coordinations = []
         for x_pos in range(self.x_axis - arrow_width):
-            y_coordinations.append(d_y)
+            xy_coordinations.append([x_pos,d_y])
         for y_pos in range(self.x_axis - arrow_width,self.x_axis):
-            for x_pos in range(arrow_height/2,self.y_axis - arrow_height/2):
-                
-                                
-
-        return y_coordinations,"green"
+            for x_pos in range(arrow_height/2,self.y_axis - arrow_height/2,-1):
+                xy_coordinations.append([x_pos,y_pos])
+        return xy_coordinations,"green"
         
-
     def BetaLadder(self) ->  tuple[np.ndarray, str]:
         pass
 
@@ -70,7 +74,6 @@ class Drawers():
     def Bend(self) ->  tuple[np.ndarray, str]:
         pass
     def Thicken(self,thicken_by:int) -> np.ndarray:
-
         pass
 
 
