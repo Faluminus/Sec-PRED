@@ -47,7 +47,7 @@ num_classes = 9
 model = tf.keras.Sequential([
     tf.keras.layers.Embedding(input_dim=max_features, output_dim=embedding_dim, mask_zero=True),
     tf.keras.layers.Conv1D(32, 19, activation='relu', padding='same'),
-    tf.keras.layers.Dense(44, activation='relu'),
+    tf.keras.layers.Dense(64, activation='relu'),
     tf.keras.layers.TimeDistributed(tf.keras.layers.Dense(tokenizer.vocab_size, activation='softmax')), 
 ])
 
@@ -58,7 +58,7 @@ model.compile(optimizer='adam',
 
 model.summary()
 model.fit(src_data_train, tgt_data_train, epochs=10)
-model.save('convolutionalSecPRED.h5')
 model.evaluate(src_data_test, tgt_data_test, batch_size=32)
+model.save('convolutionalSecPRED.keras')
 
 

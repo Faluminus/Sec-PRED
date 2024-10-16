@@ -17,7 +17,7 @@ const typeDefs = gql`
 `;
 
 interface SecStructureResponse {
-  secStructure: string[];
+  output: string;
 }
 
 const resolvers = {
@@ -46,7 +46,7 @@ const resolvers = {
     },
     secStructureSeq: async (_: null, { aminoAcidSeq }: { aminoAcidSeq: string }) => {
       try {
-          const response = await fetch('http://localhost:1212', {
+          const response = await fetch('http://127.0.0.1:5000/predict-structure', {
               method: "POST",
               headers: {
                   'Content-Type': 'application/json'
@@ -54,7 +54,7 @@ const resolvers = {
               body: JSON.stringify({ "AC": aminoAcidSeq }),
           });
           const secStructureSeq = await response.json() as SecStructureResponse;
-          return secStructureSeq.secStructure.join('');
+          return secStructureSeq.output;
       } catch (error) {
           console.error(error);
           return null;
