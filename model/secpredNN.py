@@ -40,7 +40,7 @@ model = tf.keras.Sequential([
     tf.keras.layers.Dense(2048, activation='relu' ),
     tf.keras.layers.Dense(2048, activation='relu'),
     tf.keras.layers.Dense(1024, activation='relu' ),
-    tf.keras.layers.Dense(512, activation='softmax' ),
+    tf.keras.layers.Dense(512, activation='softmax'),
 ])
 
 

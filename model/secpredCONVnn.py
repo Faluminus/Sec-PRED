@@ -29,9 +29,7 @@ src_input_ids_np = src_input_ids.numpy()
 tgt_input_ids_np = tgt_input_ids.numpy()
 
 
-
 src_data_train, src_data_test, tgt_data_train, tgt_data_test = train_test_split(src_input_ids_np, tgt_input_ids_np, test_size=0.20, random_state=42)
-
 
 
 max_seq_len = 500

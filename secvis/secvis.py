@@ -38,7 +38,7 @@ class Drawers():
             y_pos = math.sin(x_pos/(self.x_axis/2*math.pi*num_waves))*d_y
             xy_coordinations.append([x_pos,y_pos])
         return xy_coordinations , "red"
-    
+
     def BetaBridge(self,arrow_height:int,arrow_width:int) ->  tuple[np.ndarray, str]:
         """Represented as arow shape \n
         arrow_height: height of triangular shape on end of line \n
@@ -46,7 +46,7 @@ class Drawers():
         """
         assert arrow_height <= self.y_axis , "Arrow height cant be bigger than y_axis"
         assert arrow_width <= self.x_axis , "Arrow widht cant be bigger than x_axis "
-
+        
         d_y = self.y_axis /2
         xy_coordinations = []
         for x_pos in range(self.x_axis - arrow_width):
@@ -58,7 +58,7 @@ class Drawers():
         
     def BetaLadder(self) ->  tuple[np.ndarray, str]:
         pass
-
+        
     def GHelix(self) -> tuple[np.ndarray, str]:
         pass
 
