@@ -1,0 +1,32 @@
+version: '3.8'  # Specify the version
+
+services:
+  web:
+    build: ./secpred
+    ports:
+      - "8000:3000"  
+
+  backend:
+    build: ./backend
+    ports: 
+      - "6000:3001"  
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "9081:9081"  
+
+  db:
+    image: mysql:latest
+    environment:
+      - MYSQL_ROOT_PASSWORD=lspd24032_cp
+      - MYSQL_DATABASE=secpred_database
+      - MYSQL_USER=faluminus
+      - MYSQL_PASSWORD=haspax_dcE2
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:  
