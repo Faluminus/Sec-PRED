@@ -7,8 +7,17 @@ class SecVis():
     """Returns tensor with coordinates for each structure"""
     def __init__(self,secondaryStructure:str):
         self.secStrucArr = secondaryStructure.split()
-        self.drawers = Drawers([400,200])
-    def run(self):
+        self.drawers2D = None
+        
+    def SetDims2D(self,x,y):
+        self.drawers2D = Drawers2D([x,y])
+    
+    def SetDims3D(self,x,y,z):
+        pass
+        
+    def Draw2D(self):
+        assert self.drawers2D !=  None , "First set dimensions with SetDims2D and than visualise :D"
+
         orientations = []
         for x in self.secStrucArr:
             match(x):
@@ -16,7 +25,8 @@ class SecVis():
                     orientations.append(self.drawers.AlphaHelix(num_waves=5))
         return orientations
 
-class Drawers():
+
+class Drawers2D():
     def __init__(self,resolution:np.ndarray):
         """resolution - [x pixels,y pixels]"""
         assert resolution[0] > resolution[1] ,"x axis cant be smaller than y axis"
@@ -45,7 +55,7 @@ class Drawers():
         arrow_width: width of triangular shape on end of line
         """
         assert arrow_height <= self.y_axis , "Arrow height cant be bigger than y_axis"
-        assert arrow_width <= self.x_axis , "Arrow widht cant be bigger than x_axis "
+        assert arrow_width <= self.x_axis , "Arrow widht cant be bigger than x_axis"
         
         d_y = self.y_axis /2
         xy_coordinations = []
@@ -58,10 +68,10 @@ class Drawers():
         
     def BetaLadder(self) ->  tuple[np.ndarray, str]:
         pass
-        
+
     def GHelix(self) -> tuple[np.ndarray, str]:
         pass
-
+        
     def PiHelix(self) ->  tuple[np.ndarray, str]:
         pass
 
@@ -73,8 +83,13 @@ class Drawers():
 
     def Bend(self) ->  tuple[np.ndarray, str]:
         pass
+
     def Thicken(self,thicken_by:int) -> np.ndarray:
         pass
 
 
-
+class Drawers3D():
+    def __init__(self,dimensions:np.ndarray):
+        
+        pass
+    pass

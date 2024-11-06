@@ -2,11 +2,6 @@ from flask import Flask, request, jsonify
 from api.controller import Controller
 
 
-
-
-
-
-
 app = Flask(__name__)
 controller = Controller()
 

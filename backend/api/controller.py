@@ -40,3 +40,5 @@ class Controller:
         self.model.update_cache(data['AC'],secstruct)
 
         return jsonify({"output": secstruct}), 200
+    
+    

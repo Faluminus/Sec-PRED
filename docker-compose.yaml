@@ -4,29 +4,25 @@ services:
   web:
     build: ./secpred
     ports:
-      - "8000:3000"  
+      - "8000:3000"
 
   backend:
     build: ./backend
     ports: 
       - "6000:3001"  
+    
 
   redis:
     image: redis:alpine
     ports:
-      - "9081:9081"  
+      - "6379:6379"  
 
   db:
-    image: mysql:latest
-    environment:
-      - MYSQL_ROOT_PASSWORD=lspd24032_cp
-      - MYSQL_DATABASE=secpred_database
-      - MYSQL_USER=faluminus
-      - MYSQL_PASSWORD=haspax_dcE2
+    image: mongo:latest
     ports:
-      - "3306:3306"
+      - "27017:27017"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - mongo_data:/var/lib/mongo
 
 volumes:
-  mysql_data:  
+  mongo_data: 

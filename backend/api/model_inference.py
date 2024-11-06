@@ -6,7 +6,7 @@ import numpy as np
 class Inference():
     def __init__(self):
         self.tokenizer = AutoTokenizer.from_pretrained("facebook/esm2_t6_8M_UR50D")
-        self.model = tf.keras.models.load_model('./api/prediction_models/convolutionalsecpred.keras')
+        self.model = tf.keras.models.load_model('./api/prediction_models/convolutionalSecPRED.keras')
         pass
         
     def predict(self,ac):
