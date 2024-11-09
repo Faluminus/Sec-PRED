@@ -24,7 +24,7 @@ class ModelA():
     def update_db(self,aminoAcid,secStruct,drawing2D,drawing3D):
         self.collection_ac.insert_one({"ac":aminoAcid,"sec":secStruct,"drawing2D":drawing2D,"drawing3D":drawing3D})
         return None
-
+        
     def update_cache(self,aminoAcid,secStruct,drawing2D,drawing3D):
         self.redis_db.hset(aminoAcid,mapping={
             'sec':secStruct,

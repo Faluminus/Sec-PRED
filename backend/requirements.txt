@@ -4,3 +4,4 @@ tensorflow==2.17.0
 flask-cors==5.0.0
 pymongo
 redis[hiredis]
+numba

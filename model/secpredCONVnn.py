@@ -5,7 +5,7 @@ from transformers import AutoTokenizer
 from sklearn.model_selection import train_test_split
 
 
-data = pd.read_csv("./data/raw/data.csv")
+data = pd.read_csv("../data/raw/data.csv")
 
 
 tokenizer = AutoTokenizer.from_pretrained("facebook/esm2_t6_8M_UR50D")

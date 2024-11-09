@@ -25,5 +25,6 @@ class Inference():
                 cleared_output += x
             if x == '>':
                 remember = True
-        output = cleared_output
+        output = cleared_output.replace(" ", "")
         return output
+
