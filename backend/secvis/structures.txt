@@ -14,3 +14,10 @@
 7: Záhyb (Bend) (S): Ostrý, úhlový záhyb čáry, který ukazuje výraznou změnu směru.
 
 8: Cívka/Smotek (Coil/Loop) (C): Volná, vlnitá čára s mírnými a nepravidelnými zakřiveními, která zobrazuje flexibilitu smotků.
+
+
+
+
+
+
+z = e^(-yx)cos(x) + e^(-yx)sin(x)14

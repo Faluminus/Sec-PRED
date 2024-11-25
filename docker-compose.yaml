@@ -1,4 +1,4 @@
-version: '3.8'  # Specify the version
+version: '3.8'
 
 services:
   web:
@@ -7,15 +7,16 @@ services:
       - "8000:3000"
 
   backend:
-    build: ./backend
+    build:
+      context: ./backend    # Specify the build context (directory)
+      dockerfile: Dockerfile # Optionally specify the Dockerfile location (if not default)
     ports: 
-      - "6000:3001"  
-    
+      - "8080:5000"
 
   redis:
     image: redis:alpine
     ports:
-      - "6379:6379"  
+      - "6379:6379"
 
   db:
     image: mongo:latest
@@ -25,4 +26,4 @@ services:
       - mongo_data:/var/lib/mongo
 
 volumes:
-  mongo_data: 
+  mongo_data:

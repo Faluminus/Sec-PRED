@@ -14,7 +14,7 @@ class Inference():
         predictions = self.model.predict(tokenized_input)
         predicted_labels = np.argmax(predictions, axis=-1)
         output = self.tokenizer.decode(predicted_labels[0])
-
+        
         #Positional token clearing
         remember = False
         cleared_output = ""

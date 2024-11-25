@@ -5,3 +5,5 @@ flask-cors==5.0.0
 pymongo
 redis[hiredis]
 numba
+flask_restful
+flasgger

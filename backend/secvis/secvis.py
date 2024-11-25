@@ -1,8 +1,7 @@
 import numpy as np
 import math
 import matplotlib.pyplot as plt
-from matplotlib.patches import Polygon
-import decimal
+from mpl_toolkits.mplot3d import Axes3D 
 
 
 class SecVis():
@@ -11,7 +10,9 @@ class SecVis():
         # inits
         self.secStrucArr = None
         self.drawers2D = None
+        self.drawers3D = None
         self.dims2D = None
+        self.dims3D = None
 
         #Function parameters
         self.alpha_helix_waves = 5
@@ -36,8 +37,31 @@ class SecVis():
         self.drawers2D = Drawers2D(np.array([x,y]))
     
     def SetDims3D(self,x,y,z):
+        self.dims3D = {'x':x,'y':y,'z':z}
+        self.drawers3D = Drawers3D(np.array([x,y,z]))
         pass
         
+    
+    def Draw3D(self,secondaryStructure:str):
+        assert self.drawers3D !=  None , "First set dimensions with SetDims2D and than visualise :D"
+
+        self.end = 0
+        self.secStrucArr = list(secondaryStructure)
+        
+        for x in self.secStrucArr:
+            match(x):
+                case 'H':
+                    output = self.drawers3D.AlphaHelix()
+
+            for x in output:
+                self.orientations.append(x)
+                #Adds z dimensions to end var so next protein starts on the end of the last
+                self.end += self.dims3D['z']
+                self.drawers3D.SetEnd(self.end)
+
+        return self.orientations
+
+
     def Draw2D(self,secondaryStructure:str):
 
         assert self.drawers2D !=  None , "First set dimensions with SetDims2D and than visualise :D"
@@ -203,18 +227,46 @@ class Drawers2D():
 
 
 class Drawers3D():
-    def __init__(self,dimensions:np.ndarray):
-        
+    def __init__(self,resolution:np.ndarray):
+        self.x_axis = resolution[0]
+        self.y_axis = resolution[1]
+        self.z_axis = resolution[2]
+        self.end = 0
         pass
-    pass
+    
+    def SetEnd(self,end:int):
+        self.end = end
+
+    def AlphaHelix(self):
+        xyz_coordinations = []
+        z_pos = self.end
+        while z_pos <= (self.end+self.z_axis):
+            for x_pos in range(self.x_axis,0,-10):
+                z_pos+=1
+                y_pos = np.sqrt(np.power(self.x_axis,2) - np.power(x_pos,2))
+                xyz_coordinations.append([x_pos,y_pos,z_pos])
+            for x_pos in range(0,self.x_axis,10):
+                z_pos+=1
+                y_pos = np.sqrt(np.power(self.x_axis,2) - np.power(-x_pos,2))
+                xyz_coordinations.append([-x_pos,y_pos,z_pos])
+            for x_pos in range(self.x_axis,0,-10):
+                z_pos+=1
+                y_pos = np.sqrt(np.power(self.x_axis,2) - np.power(x_pos,2))
+                xyz_coordinations.append([-x_pos,-y_pos,z_pos])
+            for x_pos in range(0,self.x_axis,10):
+                z_pos+=1
+                y_pos = np.sqrt(np.power(self.x_axis,2) - np.power(-x_pos,2))
+                xyz_coordinations.append([x_pos,-y_pos,z_pos])
+            
+        return xyz_coordinations
 
 
 if __name__ == "__main__":
-
+    """
     secvis = SecVis()
-    secvis.SetDims2D(400,200)
-    output = secvis.Draw2D("CCCCSSSCCSSCCCCCCCEEEECTTCCEEEEECCTTSCTTTCEEEETTCCCTTHHHHHHHHHHC")
-    x, y = zip(*output)
+    secvis.SetDims2D(600,200)
+    output = secvis.Draw2D("HTIBEGSC")
+    x, y = zip(*output) 
 
     plt.plot(x, y, linestyle='None', marker='o', color='blue')  # 'o' is for circular markers
 
@@ -224,4 +276,14 @@ if __name__ == "__main__":
     plt.ylabel('Y-axis')
 
     plt.show()
-
+    """
+    
+    secvis = SecVis()
+    secvis.SetDims3D(800,800,700)
+    output = secvis.Draw3D("H")
+    x, y ,z = zip(*output)
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.scatter(x,y,z)
+    plt.show()
+    

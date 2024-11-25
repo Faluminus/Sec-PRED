@@ -1,18 +1,30 @@
-from flask import Flask, request, jsonify
+from flask import Flask
 from api.controller import Controller
-
+from flask_restful import Api
+from flasgger import Swagger
 
 app = Flask(__name__)
+api = Api(app)
 controller = Controller()
 
-@app.route("/get-structure", methods=["POST"])
-def get_structure():
-    return controller.get_structure(request.data)
+app.config['SWAGGER'] = {
+    'title': 'My API',
+    'uiversion': 3
+}
+swagger = Swagger(app)
 
-@app.route("/get-all-cached-proteins",methods=["GET"])
-def get_all_proteins():
-    if request.method == 'GET':
-       pass 
+########################################################################
+
+from api.resources.all_structures import GetAllProteins
+from api.resources.structure import GetStructure
+from api.resources.welcome import Welcome
+
+api.add_resource(Welcome, '/')
+api.add_resource(GetStructure, '/get-structure')
+api.add_resource(GetAllProteins, '/get-all-cached-proteins')
+
+########################################################################
 
 if __name__ == '__main__':
-    app.run(debug=True) # <----- for production debug FALSE !!!!!!!!!!!
+    app.run(host='0.0.0.0', port=5000,debug=True) # <----- for production debug FALSE !!!!!!!!!!!
+

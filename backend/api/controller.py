@@ -1,6 +1,6 @@
 from api.modela import ModelA
 from api.model_inference import Inference
-
+from threading import Thread
 
 from flask import jsonify
 
@@ -10,9 +10,8 @@ class Controller:
         self.amino_acids = ["A", "R", "N", "D", "C", "Q", "E", "G", "H", "I", "L", "K", "M", "F", "P", "S", "T", "W", "Y", "V"]
         self.inference = Inference()
         self.model = ModelA()
-    
+        
     def get_structure(self,data):
-
         #Check if key AC exists and if dict is empty
         if 'AC' not in data.keys() and not data:
             return jsonify({"output": "Unknown variable provided"}), 400
@@ -28,7 +27,7 @@ class Controller:
             return jsonify({"output": secstruct}), 200
 
         #Check db for secondary structure and if finds ---> save to cache
-        secstruct = self.model.query_cache(data['AC'])
+        secstruct = self.model.query_db(data['AC'])
         if secstruct:
             self.model.update_cache(data['AC'],secstruct)
             return jsonify({"output": secstruct}), 200
@@ -38,7 +37,6 @@ class Controller:
         secstruct = self.inference.predict(data['AC'])
         self.model.update_db(data['AC'],secstruct)
         self.model.update_cache(data['AC'],secstruct)
-
+        
         return jsonify({"output": secstruct}), 200
-    
     

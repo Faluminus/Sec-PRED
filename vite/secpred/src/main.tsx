@@ -4,7 +4,9 @@ import './index.css'
 import App from './App.tsx'
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
+    <StrictMode>
+      <div className='relative w-screen h-screen overflow-hidden'>
+        <App />
+      </div>
+    </StrictMode>,
 )
