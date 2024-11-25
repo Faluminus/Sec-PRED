@@ -12,10 +12,6 @@ class Controller:
         self.model = ModelA()
         
     def get_structure(self,data):
-        #Check if key AC exists and if dict is empty
-        if 'AC' not in data.keys() and not data:
-            return jsonify({"output": "Unknown variable provided"}), 400
-
         #Check if AC contains valid aminoacids
         for i,ac in enumerate(data['AC']):
             if ac not in self.amino_acids:

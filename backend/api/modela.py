@@ -12,20 +12,20 @@ class ModelA():
         #Redis
         self.redis_db = redis.Redis(host='localhost', port=6379, decode_responses=True)
         return None
-        
-    def query_cache(self,aminoAcid):
+    
+    def query_cache_with_protein(self,aminoAcid):
         self.redis_db.hgetall(aminoAcid)
         return None
         
-    def query_db(self,aminoAcid):
+    def query_db_with_protein(self,aminoAcid):
         self.collection_ac.find_one({"ac":aminoAcid})
         return None
     
-    def update_db(self,aminoAcid,secStruct,drawing2D,drawing3D):
+    def update_dbwith_protein_with_protein(self,aminoAcid,secStruct,drawing2D,drawing3D):
         self.collection_ac.insert_one({"ac":aminoAcid,"sec":secStruct,"drawing2D":drawing2D,"drawing3D":drawing3D})
         return None
         
-    def update_cache(self,aminoAcid,secStruct,drawing2D,drawing3D):
+    def update_cache_with_protein(self,aminoAcid,secStruct,drawing2D,drawing3D):
         self.redis_db.hset(aminoAcid,mapping={
             'sec':secStruct,
             'drawing2D':drawing2D,

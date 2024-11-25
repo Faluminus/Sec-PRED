@@ -3,9 +3,9 @@ from api.controller import Controller
 from threading import Thread
 from flask_restful import Resource
 from flasgger import swag_from
+import hashlib 
 
 controller = Controller()
-
 
 class GetStructure(Resource):
     
@@ -38,11 +38,17 @@ class GetStructure(Resource):
         return self.__return_status()
     
     def __return_status(self):
+
+        data = request.data
+        #Check if key AC exists and if dict is empty
+        if 'AC' not in data.keys() and not data:
+            return jsonify({"output": "Unknown variable provided"}), 400
+        
+        
         thread = Thread(target = self.__get_structure,args=())
         thread.run()
         response = jsonify({}), 202
-        response.headers["Location"] = "https://example.com/your-redirect-link"
         return response
-        
+
     def __get_structure():
         return controller.get_structure(request.data)

@@ -11,7 +11,7 @@ services:
       context: ./backend    # Specify the build context (directory)
       dockerfile: Dockerfile # Optionally specify the Dockerfile location (if not default)
     ports: 
-      - "8080:5000"
+      - "5001:5000"
 
   redis:
     image: redis:alpine
@@ -19,11 +19,11 @@ services:
       - "6379:6379"
 
   db:
-    image: mongo:latest
+    image: mysql:latest
     ports:
-      - "27017:27017"
+      - "3306:3306"
     volumes:
-      - mongo_data:/var/lib/mongo
+      - mysql_data:/var/lib/mysql
 
 volumes:
-  mongo_data:
+  mysql_data:
