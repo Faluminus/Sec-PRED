@@ -10,12 +10,30 @@ class Controller:
         self.amino_acids = ["A", "R", "N", "D", "C", "Q", "E", "G", "H", "I", "L", "K", "M", "F", "P", "S", "T", "W", "Y", "V"]
         self.inference = Inference()
         self.model = ModelA()
-        
-    def get_structure(self,data):
+    
+    def __data_check(self,data):
+        #Check if key AC exists and if dict is empty
+        if 'AC' not in data.keys() and not data:
+            return jsonify({"output": "Unknown variable provided"}), 400
+
         #Check if AC contains valid aminoacids
         for i,ac in enumerate(data['AC']):
             if ac not in self.amino_acids:
                 return jsonify({"output": "Unknown amino acid type used on char:{i}"}), 422
+        return None
+
+    def create_empty_cache_record(self,data):
+        status = self.__data_check(data)
+        if status is not None:
+            return status;
+
+        self.model.add_empty_cache_record(data['AC'])
+        
+    def get_structure(self,data):
+
+        status = self.__data_check(data)
+        if status is not None:
+            return status;
         
         #Check cache for secondary structure
         secstruct = self.model.query_cache(data['AC'])

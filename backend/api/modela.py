@@ -11,24 +11,28 @@ class ModelA():
 
         #Redis
         self.redis_db = redis.Redis(host='localhost', port=6379, decode_responses=True)
+        self.redis_db.set('global_cache_id',0)
         return None
     
-    def query_cache_with_protein(self,aminoAcid):
-        self.redis_db.hgetall(aminoAcid)
-        return None
-        
-    def query_db_with_protein(self,aminoAcid):
-        self.collection_ac.find_one({"ac":aminoAcid})
-        return None
-    
-    def update_dbwith_protein_with_protein(self,aminoAcid,secStruct,drawing2D,drawing3D):
-        self.collection_ac.insert_one({"ac":aminoAcid,"sec":secStruct,"drawing2D":drawing2D,"drawing3D":drawing3D})
-        return None
-        
-    def update_cache_with_protein(self,aminoAcid,secStruct,drawing2D,drawing3D):
-        self.redis_db.hset(aminoAcid,mapping={
-            'sec':secStruct,
-            'drawing2D':drawing2D,
-            'drawing3D':drawing3D
+    def add_empty_cache_record(self,aminoAcid):
+        self.redis_db.incr('global_cache_id',1)
+        id = self.redis_db.get('global_cache_id')
+        self.redis_db.hset(id,mapping={
+            'aminoAcid':aminoAcid,
+            'pending':True
+            'sec':None,
+            'drawing2D':None,
+            'drawing3D':None
         })
+        self.redis_db.expire(id,86400)
+
+    def check_cache_record(self,id):
+        max_id = self.redis_db.get('global_cache_id')
+        if id < 0 or id > max_id:
+            return None
+
+        vals = self.redis_db.hget(id)
+        if not vals['pending']:
+            return vals
+        
         return None

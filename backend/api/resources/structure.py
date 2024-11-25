@@ -37,18 +37,7 @@ class GetStructure(Resource):
     def post(self):
         return self.__return_status()
     
-    def __return_status(self):
-
-        data = request.data
-        #Check if key AC exists and if dict is empty
-        if 'AC' not in data.keys() and not data:
-            return jsonify({"output": "Unknown variable provided"}), 400
-        
-        
-        thread = Thread(target = self.__get_structure,args=())
-        thread.run()
-        response = jsonify({}), 202
-        return response
+    
 
     def __get_structure():
         return controller.get_structure(request.data)
