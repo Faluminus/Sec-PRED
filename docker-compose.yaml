@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  web:
+    build: ./secpred
+    ports:
+      - "8000:3000"
+
+  backend:
+    build:
+      context: ./backend    # Specify the build context (directory)
+      dockerfile: Dockerfile # Optionally specify the Dockerfile location (if not default)
+    ports: 
+      - "5001:5000"
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+  db:
+    image: mysql:latest
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:

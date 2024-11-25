@@ -8,11 +8,12 @@ import { ApolloClient, InMemoryCache } from '@apollo/client';
 import { Toaster, toast } from 'sonner'
 
 const PredictionPage = () =>{
-
+    const maxAminoAcids = 500;
     const [proteinID,setProteinID] = useState<string>()
     const [aminoAcidSeq,setAminoAcidSeq] = useState<string>()
     const [secStructureSeq,setSecStructureSeq] = useState<string>()
-    const [numOfAminoAcids,setNumOfAminoAcids] = useState<number>()
+    const [numOfAminoAcids,setNumOfAminoAcids] = useState<number>(0)
+    
 
 
     const [loading,setLoading] = useState<boolean>(false)
@@ -36,25 +37,27 @@ const PredictionPage = () =>{
     },[aminoAcidSeq])
 
     const handlePrediction = async()=>{
-
-        setLoading(true)
-
-        await client
-        .query({
-            query: gql`
-            query Query($aminoAcidSeq: String!) {
-                secStructureSeq(aminoAcidSeq: $aminoAcidSeq)
-            }
-            `,
-            variables: {
-                aminoAcidSeq: aminoAcidSeq,  
-            },
-        })
-        .then((result) => {
-            setSecStructureSeq(result.data['secStructureSeq'])
-            setLoading(false)
-        });
-
+        if(maxAminoAcids >= numOfAminoAcids){
+            setLoading(true)
+            await client
+            .query({
+                query: gql`
+                query Query($aminoAcidSeq: String!) {
+                    secStructureSeq(aminoAcidSeq: $aminoAcidSeq)
+                }
+                `,
+                variables: {
+                    aminoAcidSeq: aminoAcidSeq,  
+                },
+            })
+            .then((result) => {
+                setSecStructureSeq(result.data['secStructureSeq'])
+                setLoading(false)
+            });
+        }
+        else{
+            toast('SecPred', {icon: '🚀',description: 'Too many aminoAcids to handle'})
+        }
     }
     
     const handleProteinID = async ()=>{
@@ -127,14 +130,14 @@ const PredictionPage = () =>{
                         <textarea value={aminoAcidSeq} onChange={(e)=>{setAminoAcidSeq(e.target.value)}} className="w-full h-full p-2 border rounded-md font-[200] resize-none" rows={4} cols={50} placeholder="Amino acid seq...">
                         </textarea>
                         <div className='flex w-full justify-end'>
-                            <button  onClick={()=> {handlePrediction; toast('Custom Toast', {icon: '🚀',description: 'This is a custom toast notification'}) }} className='w-[400px] h-[30px] bg-blue-400 rounded-2xl text-white shadow-2xl transition duration-200 hover:shadow-black hover:scale-x-[1.03]'>
+                            <button  onClick={()=> {handlePrediction(); toast('SecPred', {icon: '🚀',description: 'Protein secondary structure is being predicted'}) }} className='w-[400px] h-[30px] bg-blue-400 rounded-2xl text-white shadow-2xl transition duration-200 hover:shadow-black hover:scale-x-[1.03]'>
                                 Predict
                             </button>
                         </div>
                     </div>
                     <div className='flex flex-col'>
                         <p>Total amino acids: <span className='font-[700]'>{numOfAminoAcids}</span></p>
-                        <p>Maximal handled amout: <span className='font-[700] text-red-500'>200</span></p>
+                        <p>Maximal handled amout: <span className='font-[700] text-red-500'>{maxAminoAcids}</span></p>
                     </div>
                     <div className="shadow-2xl rounded-2xl flex flex-col bg-white p-5 mt-10 h-[30vh]">
                         <p>Sec<span className='font-[700]'>PRED</span><span className='font-[200]'>-String</span></p>

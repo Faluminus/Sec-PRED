@@ -5,7 +5,7 @@ from transformers import AutoTokenizer
 from sklearn.model_selection import train_test_split
 
 
-data = pd.read_csv("./data/raw/data.csv")
+data = pd.read_csv("../data/raw/data.csv")
 
 
 tokenizer = AutoTokenizer.from_pretrained("facebook/esm2_t6_8M_UR50D")
@@ -29,9 +29,7 @@ src_input_ids_np = src_input_ids.numpy()
 tgt_input_ids_np = tgt_input_ids.numpy()
 
 
-
 src_data_train, src_data_test, tgt_data_train, tgt_data_test = train_test_split(src_input_ids_np, tgt_input_ids_np, test_size=0.20, random_state=42)
-
 
 
 max_seq_len = 500
@@ -47,7 +45,7 @@ num_classes = 9
 model = tf.keras.Sequential([
     tf.keras.layers.Embedding(input_dim=max_features, output_dim=embedding_dim, mask_zero=True),
     tf.keras.layers.Conv1D(32, 19, activation='relu', padding='same'),
-    tf.keras.layers.Dense(44, activation='relu'),
+    tf.keras.layers.Dense(64, activation='relu'),
     tf.keras.layers.TimeDistributed(tf.keras.layers.Dense(tokenizer.vocab_size, activation='softmax')), 
 ])
 
@@ -58,7 +56,7 @@ model.compile(optimizer='adam',
 
 model.summary()
 model.fit(src_data_train, tgt_data_train, epochs=10)
-model.save('convolutionalSecPRED.h5')
 model.evaluate(src_data_test, tgt_data_test, batch_size=32)
+model.save('convolutionalSecPRED.keras')
 
 
