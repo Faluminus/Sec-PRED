@@ -28,7 +28,11 @@ class Controller:
             return status;
 
         self.model.add_empty_cache_record(data['AC'])
-        
+    
+    def check_cache_record(self):
+        self.model.check_cache_record()
+        pass
+
     def get_structure(self,data):
 
         status = self.__data_check(data)

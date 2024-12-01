@@ -237,6 +237,9 @@ class Drawers3D():
     def SetEnd(self,end:int):
         self.end = end
 
+    def BetaSheet():
+        pass
+
     def AlphaHelix(self):
         xyz_coordinations = []
         z_pos = self.end
@@ -259,7 +262,9 @@ class Drawers3D():
                 xyz_coordinations.append([x_pos,-y_pos,z_pos])
             
         return xyz_coordinations
-
+    
+    def BetaSheet(self):
+        pass
 
 if __name__ == "__main__":
     """

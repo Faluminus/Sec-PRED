@@ -25,7 +25,7 @@ class ModelA():
             'drawing3D':None
         })
         self.redis_db.expire(id,86400)
-
+            
     def check_cache_record(self,id):
         max_id = self.redis_db.get('global_cache_id')
         if id < 0 or id > max_id:
