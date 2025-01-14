@@ -27,4 +27,4 @@ class Inference():
                 remember = True
         output = cleared_output.replace(" ", "")
         return output
-
+    
