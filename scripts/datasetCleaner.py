@@ -14,17 +14,6 @@ def normalize(df: pd.DataFrame, max_seq_len: int, ac_name: str, ss_name: str) ->
     return df
 
 
-def remove_duplicates(query: pd.Series, df: pd.DataFrame, ac_name: str, ss_name: str) -> pd.DataFrame:
-    rows_to_drop = []  
-    for i, v in df.iterrows():
-        if v[ac_name] == query[ac_name]:
-            rows_to_drop.append(i)
-        elif v[ss_name] == query[ss_name]:  
-            rows_to_drop.append(i)
-    df = df.drop(rows_to_drop, axis='index').reset_index(drop=True)
-    return df
-
-
 def remove_similars(query: pd.Series, df: pd.DataFrame, max_similarity: float, ac_name: str, ss_name:str) -> pd.DataFrame:
     for i, val in df.iterrows():
         mached = 0
@@ -53,7 +42,7 @@ if __name__ == '__main__':
     df = pd.read_csv("./../data/raw/data.csv")
     df = normalize(df, 500, ac_name, ss_name)
     for _, row in df.iterrows():
-        df = remove_duplicates(row, df, ac_name, ss_name)
+        df = df.drop_duplicates(subset=["SecondaryStructure"])
     for _, row in df.iterrows():
         df = remove_similars(row, df, 80, ac_name, ss_name)
     df.to_csv("./..data/processed/AMINtoSECcleared.csv", index=False)
