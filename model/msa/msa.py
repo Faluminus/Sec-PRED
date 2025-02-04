@@ -21,14 +21,16 @@ class FileMod():
         
 
 class msa():
-    def __init__(self, scoring_matrix_pth):
+    def __init__(self, scoring_matrix_pth, amino_acids_pth):
         self.sequence = sequence
         self.align_sequences = []
         self.pairwise_matrix = []
         self.scoring_matrix = pd.read_csv(scoring_matrix)
+        self.amino_acids_pth = amino_acids_pth
 
 
-    def __call__(self, sequence):
+    def __call__(self, amino_acid_seq):
+        relatives = browse_similar_ac(70,amino_acid_seq)
         distance_matrix = create_distance_matrix()
         quide_tree = create_quide_tree(distance_matrix)
         pass
@@ -64,10 +66,21 @@ class msa():
         self.pairwise_matrix = [row[1] = (i+1)*d for i,row in enumerate(self.pairwise_matrix)]
         return glob_ali_inner_func(seq_a_len, seq_b_len, d)    
 
-    
         
-    def browse_similar_ac(percentual_similarity: int, amino_acid_seq: str) -> list[int]:
+    def browse_similar_ac(self, percentual_similarity: int, amino_acid_seq: str) -> list[int]:
+        dt = pd.read_csv(amino_acids_pth)["AminoAcidSeq"]
+        relatives = [x for x in dt]
+        pass
 
+    
+    def percent_match(query_seq: str, comparision_seq: str):
+        unmached = abs(len(query_seq) - len(comparision_seq))
+        shorter_seq_len = len(query_seq)*(query_seq < comparision_seq) + len(comparision_seq)*(query_seq > comparision_seq)
+        larger_seq_len = len(query_seq)*(query_seq > comparision_seq) + len(comparision_seq)*(query_seq < comparision_seq)
+        for i in range(shorter_seq_len):
+            if query_seq[i] != comparision_seq[i]:
+                unmached += 1
+        return 100 - (100/larger_seq_len) * unmached 
 
 
     def create_distance_matrix(self) -> list[list[string]]:
@@ -80,7 +93,7 @@ class msa():
                 distance_matrix[i][j] = reduce(similarity_reduce,similarity)
             
         return distance_matrix
-
+        
 
     def create_quide_tree(self, distance_matrix):
         phylo_tree = PhylogenicTree()
