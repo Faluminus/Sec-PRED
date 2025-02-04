@@ -3,12 +3,14 @@ from api.controller import Controller
 from flask_restful import Api
 from flasgger import Swagger
 from api.queue_handler import QueueHandler
+from flask_cors import CORS, cross_origin
 import requests
 import threading
 app = Flask(__name__)
+cors = CORS(app)
 api = Api(app)
 controller = Controller()
-
+app.config['CORS_HEADERS'] = 'Content-Type'
 app.config['SWAGGER'] = {
     'title': 'My API',
     'uiversion': 3
@@ -21,18 +23,18 @@ swagger = Swagger(app)
 from api.resources.all_structures import GetAllProteins
 from api.resources.doprediction import DoPrediction
 from api.resources.welcome import Welcome
-from api.resources.get_webhook import GetWebhook
+from api.resources.get_by_id import GetById
 from api.queue_handler import QueueHandler 
 
-GetWebhook
 GetAllProteins
+GetById
 DoPrediction
 Welcome
 
 api.add_resource(Welcome, '/api')
 api.add_resource(DoPrediction, '/api/do-prediction')
+api.add_resource(GetById, '/api/get-by-id/<id>')
 api.add_resource(GetAllProteins, '/api/get-all-cached-proteins')
-api.add_resource(GetWebhook,'/webhook/<int:id>')
 
 
 ########################################################################
