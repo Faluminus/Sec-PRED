@@ -39,11 +39,11 @@ class Controller:
         try:
             id = int(id)
         except:
-            return make_response(jsonify({"ERROR": "id is of wrong type"}))
+            return make_response(jsonify({"ERROR": True}))
 
-        status, secondary_structure = self.model.check_cache_record(id)
+        status, data = self.model.check_cache_record(id)
         if status:
-            return make_response(jsonify(secondary_structure),200)
-        return make_response(jsonify({"PENDING": True, "ERROR": None}))
+            return make_response(jsonify(data),200)
+        return make_response(jsonify(data))
         
     

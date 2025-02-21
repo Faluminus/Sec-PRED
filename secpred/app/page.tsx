@@ -20,7 +20,6 @@ export default function Home() {
     router.push('/predictionPage');
   };
   
-
   return (
       <>
         <Canvas shadows frameloop="demand">

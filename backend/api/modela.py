@@ -7,7 +7,7 @@ class ModelA():
     def __init__(self):
         #Redis
         self.redis_db = redis.Redis(host='localhost', port=6379, decode_responses=True)
-        self.redis_db.set('global_id',-1)
+        #self.redis_db.set('global_id',-1)
         return None  
 
     def add_empty_cache_record(self,amino_acid):
@@ -40,20 +40,17 @@ class ModelA():
             id = self.redis_db.get(amino_acids)
             if id is None:
                 return False,None
-
-
         pending = self.redis_db.hget(id,"pending")
+        if pending == None:
+            return False,{'PENDING': None,'ERROR': True}
+        if pending == "True":
+            return False,{"PENDING":True, 'ERROR': False}
         amino_acids = self.redis_db.hget(id,"aminoAcids")
         secondary_structure_conv = self.redis_db.hget(id,"secondaryStructureCONV")
         secondary_structure_lstm = self.redis_db.hget(id,"secondaryStructureLSTM")
         xy_visualisation = self.redis_db.hget(id,"xyVisualisation")
         xy_height = self.redis_db.hget(id, "xyHeight")
         xy_width = self.redis_db.hget(id, "xyWidth")
-
-        if pending == None:
-            return False,{'ERROR': True}
-        if pending == "True":
-            return False,{"PENDING":True, 'ERROR': False}
         if pending == "False":
             return True,{"PENDING": False, 
             "AC": amino_acids, 
@@ -64,7 +61,6 @@ class ModelA():
             "XYHEIGHT": xy_height,
             "XYWIDTH": xy_width,
             'ERROR': False}
-        
         return False,None
     
     

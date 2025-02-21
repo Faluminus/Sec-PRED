@@ -206,7 +206,7 @@ class Drawers2D():
 if __name__ == "__main__":
     secvis = SecVis()
     secvis.SetDims2D(400, 200)
-    output = secvis.Draw2D("HGISTBEC")
+    output = secvis.Draw2D("HHHHHHHECCEEEEEEECCHHHHHHHHHHHHECCCCCCCCCHHHHHHHHHHHHHHHHHHHHHHHHHHHHCCCCCCCCCHHHHHHHHHHHHHHHHHHHHHH")
     
     plt.plot(output)
     plt.show()

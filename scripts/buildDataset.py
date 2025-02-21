@@ -2,6 +2,7 @@ import os
 import logging
 import subprocess
 import multiprocessing
+import threading
 from Bio import PDB
 import gzip
 
@@ -98,16 +99,16 @@ def DownloadSplit(number_of_workers):
         for _ in proteins:
             num_entries+=1
     already_processed = len(open(outputFileWIN,'r').readlines()) - 1
-    leftovers = num_entries % number_of_workers
-    split = (num_entries - leftovers) / number_of_workers
+    leftovers = (num_entries - already_processed) % number_of_workers
+    split = (num_entries - leftovers - already_processed) / number_of_workers
 
     arr = []
     for worker in range(1,number_of_workers+1):
         if(worker != number_of_workers):
-            range_ = [already_processed + worker*split - split, worker*split + leftovers]
+            range_ = [already_processed + worker*split - split,already_processed + worker*split + leftovers]
             arr.append(range_)
         else:
-            range_ = [already_processed + worker*split - split, worker*split]
+            range_ = [already_processed + worker*split - split,already_processed + worker*split]
             arr.append(range_)
     return arr
 
@@ -136,10 +137,13 @@ def main(to_download):
 
 
 if __name__ == '__main__': 
-    finalDataset = open(outputFileWIN,'a',newline="")
-    finalDataset.write("AminoAcidSeq,SecondaryStructureSeq,PH,Kelvin,SolventAcessibility")
-    finalDataset.close()
-    arr = DownloadSplit(1)
-    main(arr[0])
-   
-
+    t1 = threading.Thread()
+    arr = DownloadSplit(4)
+    t1 = threading.Thread(target=main,args=(arr[0],))
+    t2 = threading.Thread(target=main,args=(arr[1],))
+    t3 = threading.Thread(target=main,args=(arr[2],))
+    t4 = threading.Thread(target=main,args=(arr[3],))
+    t1.start()
+    t2.start()
+    t3.start()
+    t4.start()
