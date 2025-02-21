@@ -20,7 +20,7 @@ class FileMod():
         pass
         
 
-class msa():
+class Msa():
     def __init__(self, scoring_matrix_pth, amino_acids_pth):
         self.sequence = sequence
         self.align_sequences = []
@@ -28,15 +28,13 @@ class msa():
         self.scoring_matrix = pd.read_csv(scoring_matrix)
         self.amino_acids_pth = amino_acids_pth
 
-
+    
     def __call__(self, amino_acid_seq):
         relatives = browse_similar_ac(70,amino_acid_seq)
         distance_matrix = create_distance_matrix()
         quide_tree = create_quide_tree(distance_matrix)
-        pass
+    
         
-
-
     def phylogenic_distance(ac_a,ac_b) -> bool:
         return ac_a and ac_b
     
@@ -61,7 +59,7 @@ class msa():
         seq_a_len = len(seq_a) - 1
         seq_b_len = len(seq_b) - 1
         
-        self.pairwise_matrix = [[0] + seq_a.split()] + [[0] + [[x] + [None] * (seq_b_len) for x in seq_b]        
+        self.pairwise_matrix = [[0] + seq_a.split()] + [0] + [[x] + [None] * (seq_b_len) for x in seq_b]        
         self.pairwise_matrix[1] = [ (i+1)*d for i in range(seq_a_len)]
         self.pairwise_matrix = [row[1] = (i+1)*d for i,row in enumerate(self.pairwise_matrix)]
         return glob_ali_inner_func(seq_a_len, seq_b_len, d)    
@@ -107,7 +105,7 @@ class msa():
         pass
 
 
-    def align_clusters(self)
+    def align_clusters(self):
         pass
 
 

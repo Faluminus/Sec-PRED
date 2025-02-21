@@ -1,48 +1,76 @@
 <script>
-    import { prediction } from '$lib/store.js';
     import { page } from '$app/stores';
+	import { onMount } from 'svelte';
 
-    let predictionID = $page.params.prediction;
+    let predID = $state($page.params.prediction);
     let path = $state("")
     let predValue = $state()
-
-    const unsubscribe = prediction.subscribe(value => {
-        predValue = value;
-    });
 
     async function fetchData(id) {
         let val = await fetch(`http://127.0.0.1:5000/api/get-by-id/${id}`)
             .then(response => response.json());
         return val;
     }
-
-    let wait = 10;
-    let intervalID = setInterval(async () => {
-        let val = await fetchData(predValue.ID);
-        if (val != null || val != undefined) {
-            predValue = val;
+    
+    function checkExistence(){
+        if(predValue == null || predValue == undefined){
+            return false
         }
-        if (!predValue.PENDING) {
-            console.log(predValue.XY);
-            let arr = JSON.parse(predValue.XY);
-            arr.forEach((item, index) => {
-                if (index == 0) {
-                    path += `M ${item[0]} ${item[1]}`;
-                } else {
-                    path += `L ${item[0]} ${item[1]}`;
-                }
-            });
-        }        
-    }, wait * 1000);
+        return true
+    }
 
-    $effect(() => {
-        if (!predValue.PENDING) {
-            clearInterval(intervalID);
+    function checkPending(){
+        if (predValue.PENDING == false){
+            return true
         }
-    });
+        return false
+    }
+
+    function errorExistence(){
+        if (predValue != null || predValue != undefined){
+            if (predValue.ERROR == true){
+                return true
+            }
+        }
+        return false
+    }
+
+    function sleep(s) {
+        return new Promise(resolve => setTimeout(resolve, s*1000));
+    }
+
+    onMount(async () => {
+        let sleepTime = 2
+        let noData = true
+        while(noData){
+            let val = await fetchData(predID);
+            console.log(val)
+            if (val != null || val != undefined) {
+                predValue = val;
+                if (!predValue.PENDING || predValue.ERROR) {
+                    let arr = JSON.parse(predValue.XY);
+                    arr.forEach((item, index) => {
+                        if (index == 0) {
+                            path += `M ${item[0]} ${item[1]}`;
+                        } else {
+                            path += `L ${item[0]} ${item[1]}`;
+                        }
+                    });
+                    noData = false
+                }     
+            }
+            await sleep(sleepTime)
+            if (sleepTime < 32){
+                sleepTime*=2
+            }
+        }
+    })
+
 </script>
 
 <div class="w-screen h-screen p-10 pb-[55px] flex flex-row gap-4">
+    {#if checkExistence()}
+    {#if checkPending() && !errorExistence()}
     <div class="flex flex-col h-[100%] w-[50vw] gap-3">
         <div class='w-[50px] h-[50px]'>
             <div class='absolute flex flex-row items-center gap-5'>
@@ -67,26 +95,22 @@
                 <span class="loading loading-spinner text-info w-[30px]"></span>
             </div>
         </div>
-        <div class="shadow-2xl rounded-2xl flex flex-col bg-white p-5 mt-10 h-[30vh] text-black">
-            <p>Sec<span class='font-[700]'>PRED</span><span class='font-[200]'>-CONV</span></p>
+        <div class="shadow-2xl rounded-2xl flex flex-col bg-white p-5 mt-10 h-[30vh] text-black overflow-scroll">
+            <p class="fixed">Sec<span class='font-[700]'>PRED</span><span class='font-[200]'>-CONV</span></p>
             <div class='flex items-center justify-center w-full h-full'>
             <span class="loading loading-spinner text-info w-[3vw]"></span>
             </div>
             <p class='my-[2vh] mx-[1vw] text-blue-500'>
-                {#if predValue.PENDING == false}
-                    {predValue.SSCONV}
-                {/if}
+                {predValue.SSCONV}
             </p>
         </div>
-        <div class="shadow-2xl rounded-2xl flex flex-col bg-white p-5 mt-1 h-[30vh] text-black">
-            <p>Sec<span class='font-[700]'>PRED</span><span class='font-[200]'>-LSTM</span></p>
+        <div class="shadow-2xl rounded-2xl flex flex-col bg-white p-5 mt-1 h-[30vh] text-black overflow-scroll">
+            <p class="fixed">Sec<span class='font-[700]'>PRED</span><span class='font-[200]'>-LSTM</span></p>
             <div class='flex items-center justify-center w-full h-full'>
             <span class="loading loading-spinner text-info w-[3vw]"></span>
             </div>
             <p class='my-[2vh] mx-[1vw] text-blue-500'>
-                {#if predValue.PENDING == false}
-                    {predValue.SSLSTM}
-                {/if}
+                {predValue.SSLSTM}
             </p>
         </div>
         <div class="shadow-2xl rounded-2xl flex flex-col bg-white p-5 mt-1 h-[30vh] text-black">
@@ -94,11 +118,9 @@
             <div class='flex items-center justify-center w-full h-full'>
             <span class="loading loading-spinner text-info w-[3vw]"></span>
             </div>
-            {#if !predValue.PENDING} 
-                <svg class="overflow-visible border border-gray-300 rounded-lg h-60" width="800" height={predValue.XYHEIGTH} viewBox='0 0 {predValue.XYHEIGTH} {predValue.XYWIDTH}' xmlns="http://www.w3.org/2000/svg">
-                    <path d={path} stroke="blue" fill="none" stroke-width="2"/>
-                </svg>
-            {/if}
+            <svg class="border-gray-300 rounded-lg h-80" height={predValue.XYHEIGTH} viewBox={`256 0 1000 200`}  xmlns="http://www.w3.org/2000/svg">
+                <path d={path} stroke="blue" fill="none" stroke-width="2"/>
+            </svg>
         </div>
     </div>
     <div class="shadow-2xl rounded-2xl flex flex-col bg-black p-5 mt-1 text-white bg-opacity-30 w-[50vw] h-full">
@@ -107,4 +129,18 @@
         <span class="loading loading-spinner text-info w-[3vw]"></span>
         </div>
     </div>
+    {/if}
+    {#if !checkPending() && !errorExistence()}
+    <div class="flex flex-row items-center justify-center w-full h-full">
+        <h1 class="text-2xl">The prediction is running...</h1>
+        <img src="/White Dog Running Sticker.gif">
+    </div>
+    {/if}
+    {#if errorExistence()}
+    <div class="flex flex-row items-center justify-center w-full h-full gap-5">
+        <h1 class="text-2xl">Something went wrong</h1>
+        <img width="300" src="/Dog Crying Sticker by Sticker Book iOS GIFs.gif">
+    </div>
+    {/if}
+    {/if}
 </div>

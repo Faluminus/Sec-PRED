@@ -128,9 +128,9 @@ def Q8_score(hypothesis,references):
 
 
 #Transformer hyperparams
-d_model = 512
-d_heads = 8
-d_ff = 2048
+d_model = 128
+d_heads = 2
+d_ff = 512
 layers = 2
 dropout = 0.3
 
@@ -144,14 +144,14 @@ factor = 0.1
 patience=5
 
 #Data params
-max_seq_length = 500
-batch_size = 64
+max_seq_length = 1000
+batch_size = 2
 
 
 def tokenize_data(data):
-        return tokenizer(list(data), return_tensors="pt", padding=True, truncation=True,max_length=500)
+        return tokenizer(list(data), return_tensors="pt", padding=True, truncation=True,max_length=1000)
 tokenizer = AutoTokenizer.from_pretrained("facebook/esm2_t6_8M_UR50D")
-data = pd.read_csv("/content/drive/MyDrive/AMINtoSEC.csv")
+data = pd.read_csv("./../data/processed/AMINtoSECwithX_fraction.csv")
 src_data = tokenize_data(data['AminoAcidSeq'])
 tgt_data = tokenize_data(data['SecondaryStructureSeq'])
 
@@ -170,13 +170,13 @@ valloader = DataLoader(list(zip(src_data_train[split_idx:], tgt_data_train[split
 
 model = TransformerModel(tokenizer.vocab_size,d_model,d_heads,d_ff,layers,dropout,max_seq_length).to(device)
 criterion = nn.CrossEntropyLoss(ignore_index=1)
-optimizer = optim.AdamW(model.parameters(), lr=lr, eps=1e-6, weight_decay=weight_decay)
+optimizer = optim.Adam(model.parameters(), lr=lr, eps=1e-6, weight_decay=weight_decay)
 sheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode=mode, factor=factor, patience=patience)
 
 
 
 
-for epoch in range(200):
+for epoch in range(5):
   model.train()
   total_loss = 0.
   ntokens = tokenizer.vocab_size
