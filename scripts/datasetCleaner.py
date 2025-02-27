@@ -38,30 +38,10 @@ def remove_similars(query: pd.Series, df: pd.DataFrame, max_similarity: float, a
 if __name__ == '__main__':
     ac_name = "AminoAcidSeq"
     ss_name = "SecondaryStructureSeq"
-    df = pd.read_csv("./../data/raw/AMINtoSEC.csv", on_bad_lines="skip")
-    print(len(df))
-    df = df.dropna()
-    print(len(df))
-    #df = df.dropna(subset=[ac_name])
-    df = df[~df['Kelvin'].str.contains('NULL', na=True)]
-    df = df[~df['Kelvin'].str.contains(';', na=True)]
-    df['PH'] = pd.to_numeric(df['PH'], errors='coerce')
-    df_clean = df.dropna(subset=['PH'])
-    print(len(df))
-    ln = len(df) -1
-    #print(df[ss_name].value_counts())
-    #df = normalize(df, 1000, ac_name, ss_name)
-    #print(len(df))
-    df = df.drop_duplicates(subset=[ss_name])
-    print(len(df))
-    
-    df.to_csv("./../data/processed/AMINtoSECcleared.csv", index=False)
-    #for i, row in df.iterrows():
-    #    if i == ln:
-    #        break
-    #    if row is None:
-    #        print("whoops")
-    #    else:
-    #        df = remove_similars(row, df, 80, ac_name, ss_name)
-    #df.to_csv("./../data/processed/AMINtoSECcleared.csv", index=False)
-    
+    df = pd.read_csv("./../data/processed/AMINtoSECwithX_fraction.csv", on_bad_lines="skip")
+    print(len(df["input"]))
+    for i, x in enumerate(df["input"]):
+        if len(x) < len(df["dssp8"][i]):
+            df.drop()
+
+ 
