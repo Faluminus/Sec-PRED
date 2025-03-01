@@ -119,9 +119,6 @@ def Q8_score(hypothesis,references):
       if x != y:
         mistakes += 1
 
-    print(mistakes)
-    print(len(hypothesis))
-    print(reference_len)
     accuracy = 1 - (mistakes/reference_len)
     return accuracy
 
@@ -144,16 +141,16 @@ factor = 0.1
 patience=5
 
 #Data params
-max_seq_length = 1000
-batch_size = 2
+max_seq_length = 500
+batch_size = 1
 
 
 def tokenize_data(data):
-        return tokenizer(list(data), return_tensors="pt", padding=True, truncation=True,max_length=1000)
+        return tokenizer(list(data), return_tensors="pt", padding=True, truncation=True,max_length=max_seq_length)
 tokenizer = AutoTokenizer.from_pretrained("facebook/esm2_t6_8M_UR50D")
-data = pd.read_csv("./../data/processed/AMINtoSECwithX_fraction.csv")
-src_data = tokenize_data(data['AminoAcidSeq'])
-tgt_data = tokenize_data(data['SecondaryStructureSeq'])
+data = pd.read_csv("./../data/raw/data.csv")
+src_data = tokenize_data(data['input'])
+tgt_data = tokenize_data(data['dssp8'])
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -181,6 +178,8 @@ for epoch in range(5):
   total_loss = 0.
   ntokens = tokenizer.vocab_size
   for i, batch in enumerate(trainloader):
+      if i == 10:
+          break
       data, targets = batch[0].to(device), batch[1].to(device)
 
       tgt_input = torch.full((data.size(0), max_seq_length), tokenizer.cls_token_id, device=device).to(device)
@@ -188,15 +187,22 @@ for epoch in range(5):
 
       teacher_forcing_ratio = 0.75
       for t in range(max_seq_length):
-          output = model(data, tgt_input)
+            output = model(data, tgt_input)
 
-          if torch.rand(1).item() < teacher_forcing_ratio:
-              tgt_input = tgt_input.clone()
-              tgt_input[:, t] = targets[:, t]
-          else:
-              tgt_input = tgt_input.clone()
-              tgt_input[:, t] = output[:,t,:].argmax(dim=1)
+            if torch.rand(1).item() < teacher_forcing_ratio:
+                tgt_input = tgt_input.clone()
+                tgt_input[:, t] = targets[:, t]
+            else:
+                tgt_input = tgt_input.clone()
+                tgt_input[:, t] = output[:,t,:].argmax(dim=1)
+    
+      scores = list()
+      for prediction, tgt in zip(tgt_input, targets):
+              score = Q8_score(tokenizer.decode(prediction), tokenizer.decode(tgt))
+              scores.append(score)
 
+      percentual_score = sum(scores) / len(scores)
+      print("Accuracy:" ,percentual_score)
       loss = criterion(output.view(-1, ntokens), targets.view(-1))
       print(loss)
       loss.backward()

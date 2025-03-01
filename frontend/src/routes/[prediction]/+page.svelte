@@ -2,9 +2,13 @@
     import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 
+    const helixes = [`<path d="M 7.05 0.5 H 2.35 Q 0 0.5, -7.05 17.5 H -2.35 Q 0 17.5, 7.05 0.5" fill="#ff6600"></path>`,`<path d="M 0 7.2 L 9.4 17.5 H 4.7 Q 2.35 17.5, 0 10.799999999999999"></path>`,`<path d="M 7.05 0.5 H 2.35 Q 0 0.5, -7.05 17.5 H -2.35 Q 0 17.5, 7.05 0.5" fill="#ff6600"></path>`,`<path d="M -7.05 0.5 H -2.35 Q 0 0.5, 7.05 17.5 H 2.35 Q 0 17.5, -7.05 0.5" fill="#ff9900"></path>`,`<path d="M 0 7.2 L 9.4 17.5 H 4.7 Q 2.35 17.5, 0 10.799999999999999"></path>`]
+
     let predID = $state($page.params.prediction);
-    let path = $state("")
-    let predValue = $state()
+    let path = $state("");
+    let predValue = $state();
+    let selected = $state("LSTM+CNN");
+    let timeWaited = $state(0);
 
     async function fetchData(id) {
         let val = await fetch(`http://127.0.0.1:5000/api/get-by-id/${id}`)
@@ -39,6 +43,17 @@
         return new Promise(resolve => setTimeout(resolve, s*1000));
     }
 
+    onkeypress
+
+    //time loging
+    onMount(async () => {
+        while(!checkExistence()){
+            let x = await sleep(1);
+            timeWaited++;
+        }
+    })
+
+    //Fetching
     onMount(async () => {
         let sleepTime = 2
         let noData = true
@@ -65,7 +80,6 @@
             }
         }
     })
-
 </script>
 
 <div class="w-screen h-screen p-10 pb-[55px] flex flex-row gap-4">
@@ -95,32 +109,38 @@
                 <span class="loading loading-spinner text-info w-[30px]"></span>
             </div>
         </div>
-        <div class="shadow-2xl rounded-2xl flex flex-col bg-white p-5 mt-10 h-[30vh] text-black overflow-scroll">
-            <p class="fixed">Sec<span class='font-[700]'>PRED</span><span class='font-[200]'>-CONV</span></p>
-            <div class='flex items-center justify-center w-full h-full'>
-            <span class="loading loading-spinner text-info w-[3vw]"></span>
+        <div class="w-full h-full">
+            <form class="w-full mx-auto">
+                <label for="models" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Select an option</label>
+                <select bind:value={selected} id="models" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                <option value="LSTM+CNN">LSTM+CNN</option>
+                <option value="CNN">CNN</option>
+                <option value="TRANSFORMER">Transformer</option>
+                </select>
+            </form>
+            <div class="shadow-2xl rounded-2xl flex flex-col bg-white p-5 mt-4 h-[30vh] text-black overflow-scroll">
+                <p class="fixed">Sec<span class='font-[700]'>PRED</span><span class='font-[200]'>-{selected}</span></p>
+                <div class='flex items-center justify-center w-full h-full'>
+                <span class="loading loading-spinner text-info w-[3vw]"></span>
+                </div>
+                <p class='my-[2vh] mx-[1vw] text-blue-500'>
+                    {#if selected == "LSTM+CNN"}
+                        {predValue.SSLSTM}
+                    {/if}
+                    {#if selected == "CNN"}
+                        {predValue.SSCONV}
+                    {/if}
+                </p>
             </div>
-            <p class='my-[2vh] mx-[1vw] text-blue-500'>
-                {predValue.SSCONV}
-            </p>
-        </div>
-        <div class="shadow-2xl rounded-2xl flex flex-col bg-white p-5 mt-1 h-[30vh] text-black overflow-scroll">
-            <p class="fixed">Sec<span class='font-[700]'>PRED</span><span class='font-[200]'>-LSTM</span></p>
-            <div class='flex items-center justify-center w-full h-full'>
-            <span class="loading loading-spinner text-info w-[3vw]"></span>
+            <div class="shadow-2xl rounded-2xl flex flex-col bg-white p-5 mt-2 h-[30vh] text-black">
+                <p>Sec<span class='font-[700]'>PRED</span><span class='font-[200]'>-2D</span></p>
+                <div class='flex items-center justify-center w-full h-full'>
+                <span class="loading loading-spinner text-info w-[3vw]"></span>
+                </div>
+                <svg class="border-gray-300 rounded-lg h-80" height={predValue.XYHEIGTH} viewBox={`256 0 1000 200`}  xmlns="http://www.w3.org/2000/svg">
+                    <path d={path} stroke="blue" fill="none" stroke-width="2"/>
+                </svg>
             </div>
-            <p class='my-[2vh] mx-[1vw] text-blue-500'>
-                {predValue.SSLSTM}
-            </p>
-        </div>
-        <div class="shadow-2xl rounded-2xl flex flex-col bg-white p-5 mt-1 h-[30vh] text-black">
-            <p>Sec<span class='font-[700]'>PRED</span><span class='font-[200]'>-2D</span></p>
-            <div class='flex items-center justify-center w-full h-full'>
-            <span class="loading loading-spinner text-info w-[3vw]"></span>
-            </div>
-            <svg class="border-gray-300 rounded-lg h-80" height={predValue.XYHEIGTH} viewBox={`256 0 1000 200`}  xmlns="http://www.w3.org/2000/svg">
-                <path d={path} stroke="blue" fill="none" stroke-width="2"/>
-            </svg>
         </div>
     </div>
     <div class="shadow-2xl rounded-2xl flex flex-col bg-black p-5 mt-1 text-white bg-opacity-30 w-[50vw] h-full">
@@ -131,9 +151,14 @@
     </div>
     {/if}
     {#if !checkPending() && !errorExistence()}
-    <div class="flex flex-row items-center justify-center w-full h-full">
-        <h1 class="text-2xl">The prediction is running...</h1>
-        <img src="/White Dog Running Sticker.gif">
+    <div class='flex flex-col justify-center items-center w-full h-full'>
+        <div class="flex flex-row items-center justify-center w-full h-full">
+            <h1 class="text-2xl">The prediction is running...</h1>
+            <img src="/White Dog Running Sticker.gif">
+        </div>
+        <div>
+            <h3>Task pending {timeWaited} seconds</h3>
+        </div>
     </div>
     {/if}
     {#if errorExistence()}
