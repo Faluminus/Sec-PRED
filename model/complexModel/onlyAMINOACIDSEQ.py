@@ -66,7 +66,7 @@ num_classes = 9
 
 model = tf.keras.Sequential([
     tf.keras.layers.Embedding(input_dim=max_features, output_dim=embedding_dim, mask_zero=True),
-    tf.keras.layers.Conv1D(32, 19, activation='relu', padding='same'),
+    tf.keras.layers.Conv1D(32, 19, activation='relu', padding='same', input_shape=(None,embedding_dim)),
     tf.keras.layers.Dense(64, activation='relu'),
     tf.keras.layers.TimeDistributed(tf.keras.layers.Dense(tokenizer.vocab_size, activation='softmax')), 
 ])

@@ -82,7 +82,9 @@ num_classes = 9
 model = tf.keras.Sequential([
     tf.keras.layers.Embedding(input_dim=max_features, output_dim=embedding_dim, mask_zero=True),
     tf.keras.layers.LSTM(128, return_sequences=True, activation='relu', dropout=0.4, kernel_regularizer=L2(0.01)),
-    tf.keras.layers.Conv1D(64, 70, activation='relu', padding='same' , kernel_regularizer=L2(0.01)),
+    tf.keras.layers.Conv1D(64, 70, activation='relu', kernel_regularizer=L2(0.01), input_shape=(None, embedding_dim)),
+    tf.keras.layers.Dense(max_seq_len, activation="softmax"),
+    tf.keras.layers.Flatten(input_shape=(max_seq_len,))
 ])
 
 
@@ -92,7 +94,6 @@ model.compile(optimizer=optimizer,
             metrics=['accuracy'],
             )
 
-model.summary()
 history = model.fit(src_data_train, tgt_data_train, validation_data=(src_data_validate,tgt_data_validate), epochs=10, sample_weight=sample_weights)
 for s,t in zip(src_input_ids_np_test, tgt_input_ids_np_test):
     model.evaluate(s, t)
