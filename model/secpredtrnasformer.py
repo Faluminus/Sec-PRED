@@ -147,7 +147,11 @@ data = pd.read_csv("./../data/raw/data.csv")
 src_data = tokenize_data(data['input'], max_seq_length, tokenizer)
 tgt_data = tokenize_data(data['dssp8'], max_seq_length, tokenizer)
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+if torch.backends.mps.is_available():
+    device = torch.device("mps")
+else:
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(device)
 
 
