@@ -8,6 +8,7 @@ import torch.optim as optim
 from sklearn.model_selection import train_test_split
 import pandas as pd
 from transformers import AutoTokenizer
+import sys
 
 
 
@@ -68,12 +69,8 @@ class TransformerModel(nn.Module):
         if tgt_mask is None:
           tgt_mask = self._generate_square_subsequent_mask(tgt.size(1)).to(tgt.device).type(torch.bool)
 
-
-
-
         src_padding_mask = (src == tokenizer.pad_token_id).to(src.device)
         tgt_padding_mask = (tgt == tokenizer.pad_token_id).to(tgt.device)
-
 
         src = self.input_emb(src) * math.sqrt(self.ninp)
         src = self.pos_encoder(src)
@@ -82,8 +79,6 @@ class TransformerModel(nn.Module):
 
         memory = self.transformer.encoder(src,src_key_padding_mask=src_padding_mask)
         output = self.transformer.decoder(tgt, memory, memory_mask=src_mask,tgt_key_padding_mask=tgt_padding_mask,memory_key_padding_mask=src_padding_mask)
-
-
 
         output = self.decoder(output)
         return F.log_softmax(output,dim=-1)
@@ -142,18 +137,18 @@ patience=5
 
 #Data params
 max_seq_length = 500
-batch_size = 1
+batch_size = 12
 
 
-def tokenize_data(data):
-        return tokenizer(list(data), return_tensors="pt", padding=True, truncation=True,max_length=max_seq_length)
+def tokenize_data(data, max_len, tokenizer):
+        return tokenizer(list(data), return_tensors="pt", padding=True, truncation=True,max_length=max_len)
 tokenizer = AutoTokenizer.from_pretrained("facebook/esm2_t6_8M_UR50D")
 data = pd.read_csv("./../data/raw/data.csv")
-src_data = tokenize_data(data['input'])
-tgt_data = tokenize_data(data['dssp8'])
+src_data = tokenize_data(data['input'], max_seq_length, tokenizer)
+tgt_data = tokenize_data(data['dssp8'], max_seq_length, tokenizer)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
+print(device)
 
 
 src_data_train, src_data_test, tgt_data_train , tgt_data_test = train_test_split(src_data['input_ids'], tgt_data['input_ids'], test_size=0.20, random_state=42)
@@ -174,19 +169,16 @@ sheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode=mode, fact
 
 
 for epoch in range(5):
-  model.train()
-  total_loss = 0.
-  ntokens = tokenizer.vocab_size
-  for i, batch in enumerate(trainloader):
-      if i == 10:
-          break
-      data, targets = batch[0].to(device), batch[1].to(device)
+    model.train()
+    total_loss = 0.
+    ntokens = tokenizer.vocab_size
+    for i, batch in enumerate(trainloader):
+        data, targets = batch[0].to(device), batch[1].to(device)
 
-      tgt_input = torch.full((data.size(0), max_seq_length), tokenizer.cls_token_id, device=device).to(device)
+        tgt_input = torch.full((data.size(0), max_seq_length), tokenizer.cls_token_id, device=device).to(device)
 
-
-      teacher_forcing_ratio = 0.75
-      for t in range(max_seq_length):
+        teacher_forcing_ratio = 0.75
+        for t in range(max_seq_length):
             output = model(data, tgt_input)
 
             if torch.rand(1).item() < teacher_forcing_ratio:
@@ -195,46 +187,45 @@ for epoch in range(5):
             else:
                 tgt_input = tgt_input.clone()
                 tgt_input[:, t] = output[:,t,:].argmax(dim=1)
-    
-      scores = list()
-      for prediction, tgt in zip(tgt_input, targets):
-              score = Q8_score(tokenizer.decode(prediction), tokenizer.decode(tgt))
-              scores.append(score)
 
-      percentual_score = sum(scores) / len(scores)
-      print("Accuracy:" ,percentual_score)
-      loss = criterion(output.view(-1, ntokens), targets.view(-1))
-      print(loss)
-      loss.backward()
+        scores = list()
+        for prediction, tgt in zip(tgt_input, targets):
+                score = Q8_score(tokenizer.decode(prediction), tokenizer.decode(tgt))
+                scores.append(score)
 
-      torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.25)
-      optimizer.step()
-      optimizer.zero_grad()
-      total_loss += loss.item()
+        percentual_score = sum(scores) / len(scores)
+        loss = criterion(output.view(-1, ntokens), targets.view(-1))
+        sys.stdout.flush()
+        sys.stdout.write("\r" + f"Accuracy: {percentual_score} Loss: {loss}")
+        loss.backward()
 
-  model.eval()
-  scores = []
-  with torch.no_grad():
-      for i, batch in enumerate(valloader):
-          src_data_val, tgt_data_val = batch
-          src_data_val = src_data_val.to(device)
-          tgt_data_val = tgt_data_val.to(device)
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.25)
+        optimizer.step()
+        optimizer.zero_grad()
+        total_loss += loss.item()
 
-          tgt_input = torch.full((batch.size(0), max_seq_length), tokenizer.cls_token_id, device=device)
+    model.eval()
+    scores = []
+    with torch.no_grad():
+        for i, batch in enumerate(valloader):
+           
+            src_data_val, tgt_data_val = batch[0].to(device), batch[1].to(device)
+            tgt_input = torch.full((src_data_val.size(0), max_seq_length), tokenizer.cls_token_id, device=device)
 
-          for t in range(max_seq_length):
-              output = model(src_data_val, tgt_input)
-              tgt_input = tgt_input.clone()
-              tgt_input[:, t] = output[:,t,:].argmax(dim=1)
-          torch.save(model.state_dict(),'/content/drive/MyDrive/diffmodelComplex.pth')
+            for t in range(max_seq_length):
+                output = model(src_data_val, tgt_input)
+                tgt_input = tgt_input.clone()
+                tgt_input[:, t] = output[:,t,:].argmax(dim=1)
+            
+            torch.save(model.state_dict(),'./trained/transformer.pth')
 
 
-          for prediction, target in zip(tgt_input, tgt_data_val):
-              score = Q8_score(tokenizer.decode(prediction), tokenizer.decode(target))
-              scores.append(score)
+            for prediction, target in zip(tgt_input, tgt_data_val):
+                score = Q8_score(tokenizer.decode(prediction), tokenizer.decode(target))
+                scores.append(score)
 
-      percentual_score = sum(scores) / len(scores)
 
-  print(f"Epoch:{epoch} Validation Q8 Score: {percentual_score} Learning rate: {optimizer.param_groups[0]['lr']}")
-  sheduler.step(percentual_score)
+    percentual_score = sum(scores) / len(scores)
+    print(f"Epoch:{epoch} Validation Q8 Score: {percentual_score} Learning rate: {optimizer.param_groups[0]['lr']}")
+    sheduler.step(percentual_score)
 
