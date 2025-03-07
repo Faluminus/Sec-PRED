@@ -1,171 +1,188 @@
 <script>
-    import { page } from '$app/stores';
+	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
+	import Visual from './prediction_components/functional_components/visual.svelte';
+	
 
-    const helixes = [`<path d="M 7.05 0.5 H 2.35 Q 0 0.5, -7.05 17.5 H -2.35 Q 0 17.5, 7.05 0.5" fill="#ff6600"></path>`,`<path d="M 0 7.2 L 9.4 17.5 H 4.7 Q 2.35 17.5, 0 10.799999999999999"></path>`,`<path d="M 7.05 0.5 H 2.35 Q 0 0.5, -7.05 17.5 H -2.35 Q 0 17.5, 7.05 0.5" fill="#ff6600"></path>`,`<path d="M -7.05 0.5 H -2.35 Q 0 0.5, 7.05 17.5 H 2.35 Q 0 17.5, -7.05 0.5" fill="#ff9900"></path>`,`<path d="M 0 7.2 L 9.4 17.5 H 4.7 Q 2.35 17.5, 0 10.799999999999999"></path>`]
+	let predID;
+	let path = $state('');
+	let predValue = $state();
+	let selected = $state('LSTM+CNN');
+	let timeWaited = $state(0);
+	let secondaryStructure = $state('')
 
-    let predID = $state($page.params.prediction);
-    let path = $state("");
-    let predValue = $state();
-    let selected = $state("LSTM+CNN");
-    let timeWaited = $state(0);
 
-    async function fetchData(id) {
-        let val = await fetch(`http://127.0.0.1:5000/api/get-by-id/${id}`)
-            .then(response => response.json());
-        return val;
-    }
-    
-    function checkExistence(){
-        if(predValue == null || predValue == undefined){
-            return false
-        }
-        return true
-    }
+	async function fetchData(id) {
+		let val = await fetch(`http://127.0.0.1:5000/api/get-by-id/${id}`).then((response) =>
+			response.json()
+		);
+		return val;
+	}
 
-    function checkPending(){
-        if (predValue.PENDING == false){
-            return true
-        }
-        return false
-    }
+	function checkExistence() {
+		if (predValue == null || predValue == undefined) {
+			return false;
+		}
+		return true;
+	}
 
-    function errorExistence(){
-        if (predValue != null || predValue != undefined){
-            if (predValue.ERROR == true){
-                return true
-            }
-        }
-        return false
-    }
+	function checkPending() {
+		if (predValue.PENDING == false) {
+			return true;
+		}
+		return false;
+	}
 
-    function sleep(s) {
-        return new Promise(resolve => setTimeout(resolve, s*1000));
-    }
+	function errorExistence() {
+		if (predValue != null || predValue != undefined) {
+			if (predValue.ERROR == true) {
+				return true;
+			}
+		}
+		return false;
+	}
 
-    onkeypress
+	function sleep(s) {
+		return new Promise((resolve) => setTimeout(resolve, s * 1000));
+	}
 
-    //time loging
-    onMount(async () => {
-        while(!checkExistence()){
-            let x = await sleep(1);
-            timeWaited++;
-        }
-    })
+	function handleModelChange(){
+		if(selected == "LSTM+CNN"){
+			secondaryStructure = predValue.SSLSTM
+		} else if(selected == "CNN"){
+			secondaryStructure = predValue.SSCONV
+		} else {
+			secondaryStructure = predValue.SSTRANSFORMER
+		}
+	}
 
-    //Fetching
-    onMount(async () => {
-        let sleepTime = 2
-        let noData = true
-        while(noData){
-            let val = await fetchData(predID);
-            console.log(val)
-            if (val != null || val != undefined) {
-                predValue = val;
-                if (!predValue.PENDING || predValue.ERROR) {
-                    let arr = JSON.parse(predValue.XY);
-                    arr.forEach((item, index) => {
-                        if (index == 0) {
-                            path += `M ${item[0]} ${item[1]}`;
-                        } else {
-                            path += `L ${item[0]} ${item[1]}`;
-                        }
-                    });
-                    noData = false
-                }     
-            }
-            await sleep(sleepTime)
-            if (sleepTime < 32){
-                sleepTime*=2
-            }
-        }
-    })
+	//time loging
+	onMount(async () => {
+		while (!checkExistence()) {
+			let x = await sleep(1);
+			timeWaited++;
+		}
+	});
+
+	//Fetching
+	onMount(async () => {
+		predID = $page.params.prediction
+		let sleepTime = 2;
+		let noData = true;
+		while (noData) {
+			let val = await fetchData(predID);
+			console.log(val);
+			if (val != null && val != undefined) {
+				predValue = val;
+				if (!predValue.PENDING || predValue.ERROR) {
+					let arr = JSON.parse(predValue.XY);
+					arr.forEach((item, index) => {
+						if (index == 0) {
+							path += `M ${item[0]} ${item[1]}`;
+						} else {
+							path += `L ${item[0]} ${item[1]}`;
+						}
+					});
+					noData = false;
+					predValue.AC = predValue.AC.slice(1,-1)
+					secondaryStructure = predValue.SSLSTM
+				}
+			}
+			await sleep(sleepTime);
+			if (sleepTime < 32) {
+				sleepTime *= 2;
+			}
+		}
+	});
 </script>
 
-<div class="w-screen h-screen p-10 pb-[55px] flex flex-row gap-4">
-    {#if checkExistence()}
-    {#if checkPending() && !errorExistence()}
-    <div class="flex flex-col h-[100%] w-[50vw] gap-3">
-        <div class='w-[50px] h-[50px]'>
-            <div class='absolute flex flex-row items-center gap-5'>
-                <div class='flex bg-blue-400 rounded-full w-[45px] h-[45px] justify-center items-center cursor-pointer shadow-2xl transition duration-200 hover:scale-110 hover:shadow-black'>
-                    <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M11 20C15.9706 20 20 15.9706 20 11C20 6.02944 15.9706 2 11 2C6.02944 2 2 6.02944 2 11C2 15.9706 6.02944 20 11 20Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M18.9299 20.6898C19.4599 22.2898 20.6699 22.4498 21.5999 21.0498C22.4499 19.7698 21.8899 18.7198 20.3499 18.7198C19.2099 18.7098 18.5699 19.5998 18.9299 20.6898Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </div>
-                <div class='flex bg-blue-400 rounded-full w-[45px] h-[45px] justify-center items-center cursor-pointer shadow-2xl transition duration-200 hover:scale-110 hover:shadow-black'>
-                    <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M11 20C15.9706 20 20 15.9706 20 11C20 6.02944 15.9706 2 11 2C6.02944 2 2 6.02944 2 11C2 15.9706 6.02944 20 11 20Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M18.9299 20.6898C19.4599 22.2898 20.6699 22.4498 21.5999 21.0498C22.4499 19.7698 21.8899 18.7198 20.3499 18.7198C19.2099 18.7098 18.5699 19.5998 18.9299 20.6898Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </div>
-                <div class='flex bg-blue-400 rounded-full w-[45px] h-[45px] justify-center items-center cursor-pointer shadow-2xl transition duration-200 hover:scale-110 hover:shadow-black'>
-                    <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M11 20C15.9706 20 20 15.9706 20 11C20 6.02944 15.9706 2 11 2C6.02944 2 2 6.02944 2 11C2 15.9706 6.02944 20 11 20Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M18.9299 20.6898C19.4599 22.2898 20.6699 22.4498 21.5999 21.0498C22.4499 19.7698 21.8899 18.7198 20.3499 18.7198C19.2099 18.7098 18.5699 19.5998 18.9299 20.6898Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </div>
-                <span class="loading loading-spinner text-info w-[30px]"></span>
-            </div>
-        </div>
-        <div class="w-full h-full">
-            <form class="w-full mx-auto">
-                <label for="models" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Select an option</label>
-                <select bind:value={selected} id="models" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                <option value="LSTM+CNN">LSTM+CNN</option>
-                <option value="CNN">CNN</option>
-                <option value="TRANSFORMER">Transformer</option>
-                </select>
-            </form>
-            <div class="shadow-2xl rounded-2xl flex flex-col bg-white p-5 mt-4 h-[30vh] text-black overflow-scroll">
-                <p class="fixed">Sec<span class='font-[700]'>PRED</span><span class='font-[200]'>-{selected}</span></p>
-                <div class='flex items-center justify-center w-full h-full'>
-                <span class="loading loading-spinner text-info w-[3vw]"></span>
-                </div>
-                <p class='my-[2vh] mx-[1vw] text-blue-500'>
-                    {#if selected == "LSTM+CNN"}
-                        {predValue.SSLSTM}
-                    {/if}
-                    {#if selected == "CNN"}
-                        {predValue.SSCONV}
-                    {/if}
-                </p>
-            </div>
-            <div class="shadow-2xl rounded-2xl flex flex-col bg-white p-5 mt-2 h-[30vh] text-black">
-                <p>Sec<span class='font-[700]'>PRED</span><span class='font-[200]'>-2D</span></p>
-                <div class='flex items-center justify-center w-full h-full'>
-                <span class="loading loading-spinner text-info w-[3vw]"></span>
-                </div>
-                <svg class="border-gray-300 rounded-lg h-80" height={predValue.XYHEIGTH} viewBox={`256 0 1000 200`}  xmlns="http://www.w3.org/2000/svg">
-                    <path d={path} stroke="blue" fill="none" stroke-width="2"/>
-                </svg>
-            </div>
-        </div>
-    </div>
-    <div class="shadow-2xl rounded-2xl flex flex-col bg-black p-5 mt-1 text-white bg-opacity-30 w-[50vw] h-full">
-        <p>Sec<span class='font-[700]'>PRED</span><span class='font-[200]'>-2D</span></p>
-        <div class='flex items-center justify-center w-full h-full'>
-        <span class="loading loading-spinner text-info w-[3vw]"></span>
-        </div>
-    </div>
-    {/if}
-    {#if !checkPending() && !errorExistence()}
-    <div class='flex flex-col justify-center items-center w-full h-full'>
-        <div class="flex flex-row items-center justify-center w-full h-full">
-            <h1 class="text-2xl">The prediction is running...</h1>
-            <img src="/White Dog Running Sticker.gif">
-        </div>
-        <div>
-            <h3>Task pending {timeWaited} seconds</h3>
-        </div>
-    </div>
-    {/if}
-    {#if errorExistence()}
-    <div class="flex flex-row items-center justify-center w-full h-full gap-5">
-        <h1 class="text-2xl">Something went wrong</h1>
-        <img width="300" src="/Dog Crying Sticker by Sticker Book iOS GIFs.gif">
-    </div>
-    {/if}
-    {/if}
+<div class="flex h-screen w-screen flex-row gap-4 p-10 pb-[55px]">
+	{#if checkExistence()}
+		{#if checkPending() && !errorExistence()}
+			<div class="flex h-[100%] w-full flex-col gap-3">
+				<div class="h-full w-full">
+					<div class="items-left flex h-[80px] w-full flex-row justify-center">
+						<form class="mx-auto h-[60px] w-[70vw]">
+							<label for="models" class="mb-2 block text-sm font-medium text-gray-900"
+								>Pick a model</label
+							>
+							<select
+								bind:value={selected}
+								on:change={handleModelChange}
+								id="models"
+								class="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+							>
+								<option value="LSTM+CNN">LSTM+CNN</option>
+								<option value="CNN">CNN</option>
+								<option value="TRANSFORMER">Transformer</option>
+							</select>
+						</form>
+						<div
+							class="flex h-[45px] w-[45px] cursor-pointer items-center justify-center rounded-full bg-blue-400 shadow-2xl transition duration-200 hover:scale-110 hover:shadow-black"
+						>
+							<svg
+								width="25"
+								height="25"
+								viewBox="0 0 25 25"
+								fill="none"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<path
+									d="M11 20C15.9706 20 20 15.9706 20 11C20 6.02944 15.9706 2 11 2C6.02944 2 2 6.02944 2 11C2 15.9706 6.02944 20 11 20Z"
+									stroke="white"
+									stroke-width="1.5"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								/>
+								<path
+									d="M18.9299 20.6898C19.4599 22.2898 20.6699 22.4498 21.5999 21.0498C22.4499 19.7698 21.8899 18.7198 20.3499 18.7198C19.2099 18.7098 18.5699 19.5998 18.9299 20.6898Z"
+									stroke="white"
+									stroke-width="1.5"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								/>
+							</svg>
+						</div>
+					</div>
+					<div
+						class="mt-4 flex h-auto w-full flex-col rounded-2xl bg-white p-5 text-black shadow-2xl"
+					>
+						<p class="h-full">
+							Sec<span class="font-[700]">PRED</span><span class="font-[200]">-{selected}</span>
+						</p>
+						<div class="flex h-full w-full items-center justify-center"></div>
+						
+						<Visual bind:aminoAcid={predValue.AC} bind:secondaryStructure={secondaryStructure} />
+				
+                        <svg
+                            class="h-20 rounded-lg border-gray-300"
+                            height={predValue.XYHEIGTH}
+                            viewBox={`0 0 1000 200`}
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <path d={path} stroke="#ff6600" fill="white" stroke-width="4" />
+                        </svg>
+					</div>
+					
+				</div>
+			</div>
+		{/if}
+		{#if !checkPending() && !errorExistence()}
+			<div class="flex h-full w-full flex-col items-center justify-center">
+				<div class="flex h-full w-full flex-row items-center justify-center">
+					<h1 class="text-2xl">The prediction is running...</h1>
+					<img src="/White Dog Running Sticker.gif" />
+				</div>
+				<div>
+					<h3>Task pending {timeWaited} seconds</h3>
+				</div>
+			</div>
+		{/if}
+		{#if errorExistence()}
+			<div class="flex h-full w-full flex-row items-center justify-center gap-5">
+				<h1 class="text-2xl">Something went wrong</h1>
+				<img width="300" src="/Dog Crying Sticker by Sticker Book iOS GIFs.gif" />
+			</div>
+		{/if}
+	{/if}
 </div>
