@@ -2,7 +2,6 @@
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import Visual from './prediction_components/functional_components/visual.svelte';
-	
 
 	let predID;
 	let path = $state('');
@@ -94,13 +93,15 @@
 			}
 		}
 	});
+
+	
 </script>
 
 <div class="flex h-screen w-screen flex-row gap-4 p-10 pb-[55px]">
 	{#if checkExistence()}
 		{#if checkPending() && !errorExistence()}
 			<div class="flex h-[100%] w-full flex-col gap-3">
-				<div class="h-full w-full">
+				<div class="flex flex-col h-full w-full items-center ">
 					<div class="items-left flex h-[80px] w-full flex-row justify-center">
 						<form class="mx-auto h-[60px] w-[70vw]">
 							<label for="models" class="mb-2 block text-sm font-medium text-gray-900"
@@ -118,7 +119,7 @@
 							</select>
 						</form>
 						<div
-							class="flex h-[45px] w-[45px] cursor-pointer items-center justify-center rounded-full bg-blue-400 shadow-2xl transition duration-200 hover:scale-110 hover:shadow-black"
+							class="flex h-[45px] w-[45px] cursor-pointer items-center justify-center rounded-full bg-blue-400 shadow-2xl transition duration-200 hover:scale-110 hover:shadow-black fixed right-10"
 						>
 							<svg
 								width="25"
@@ -145,23 +146,12 @@
 						</div>
 					</div>
 					<div
-						class="mt-4 flex h-auto w-full flex-col rounded-2xl bg-white p-5 text-black shadow-2xl"
+						class="mt-4 flex w-[70vw] flex-col rounded-2xl bg-white p-5 text-black shadow-2xl"
 					>
 						<p class="h-full">
 							Sec<span class="font-[700]">PRED</span><span class="font-[200]">-{selected}</span>
 						</p>
-						<div class="flex h-full w-full items-center justify-center"></div>
-						
 						<Visual bind:aminoAcid={predValue.AC} bind:secondaryStructure={secondaryStructure} />
-				
-                        <svg
-                            class="h-20 rounded-lg border-gray-300"
-                            height={predValue.XYHEIGTH}
-                            viewBox={`0 0 1000 200`}
-                            xmlns="http://www.w3.org/2000/svg"
-                        >
-                            <path d={path} stroke="#ff6600" fill="white" stroke-width="4" />
-                        </svg>
 					</div>
 					
 				</div>

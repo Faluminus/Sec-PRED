@@ -1,3 +1,6 @@
 https://pubmed.ncbi.nlm.nih.gov/26000449/
 https://paperswithcode.com/paper/ps4-a-next-generation-dataset-for-protein
 https://www.pnas.org/doi/10.1073/pnas.1507565112?utm_source=chatgpt.com
+https://pmc.ncbi.nlm.nih.gov/articles/PMC9994790/
+https://en.wikipedia.org/wiki/Bloom_filter
+https://en.wikipedia.org/wiki/K-mer
