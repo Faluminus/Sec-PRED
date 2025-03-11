@@ -1,6 +1,7 @@
 <script>
 	import Pdb from './main_components/functional_components/pdb.svelte';
 	import Predict from './main_components/functional_components/predict.svelte';
+	import Visprotein from './main_components/functional_components/visprotein.svelte';
     let input_ac = $state("");
 
     function handleUpdate(event){
@@ -8,6 +9,9 @@
         console.log(input_ac)
     }
 
+    const hemoglobinAlphaOne = "Hemoglobin is a protein that facilitates the transport of oxygen and other gases in red blood cells. Almost all vertebrates contain hemoglobin. It consists of four protein subunits (globins), and is one of the first proteins whose 3D structure has been experimentally determined. There are many types of hemoglobin, with hemoglobin alpha 1 (encoded by the HBA1 gene) occurring in humans and being the main form of hemoglobin in adults. In this use case, AlphaFind shows us that highly similar hemoglobin structures can also be found in other species."
+    const cytochromeP450 = "Cytochrome P450 are enzymes which are important for the metabolism of many endogenous compounds and xenobiotics. P450 enzymes have been identified across all biological kingdoms: animals, plants, fungi, bacteria and archaea, as well as in viruses. Cytochrome P450 proteins contain one chain which is composed of more than 20 sheets and helices. Their sequence similarity is very low. In this use case, we can see similarities among cytochrome P450 structures from various species. The search starts with a cytochrome from corn (Zea Mays), and within the first 50 hits, we find similar structures originating from various animals (mouse, cat, horse, etc.)"
+    const pin5Protein = "The PIN proteins are transmembrane proteins which regulate plant growth by influencing auxin transport from the cytosol to the extracellular space. They only occur in plants and feature a configuration of 10 main helices that collectively form a pore. Eight types of PIN proteins are known (PIN1-PIN8), and recently, the structures of three PIN proteins were uncovered and published in Nature. The structure of the PIN5 protein differs from other PINs (Ung 2022) and has not yet been experimentally determined. This use case shows that the PIN5 protein structure is strongly conserved among many different plant species."
 </script>
 
 <div class="flex flex-col items-left justify-center w-full h-full text-4xl gap-4 p-32 pl-64 pr-64">
@@ -26,6 +30,12 @@
             <Pdb on:updated={handleUpdate}></Pdb>
             <Predict bind:input_ac={input_ac}></Predict>
         </div>   
+    </div>
+    <div class="flex flex-row justify-between">
+        <Visprotein protein_code="4HHB" protein_name="Hemoglobin alpha 1" protein_description={hemoglobinAlphaOne}></Visprotein>
+        <Visprotein protein_code="4HHB" protein_name="Cytochrome P450" protein_description={cytochromeP450}></Visprotein>
+        <Visprotein protein_code="4HHB" protein_name="Pin5 protein" protein_description={pin5Protein}></Visprotein>
+        <Visprotein protein_code="4HHB" protein_name="Cool proteinek" protein_description="wjdiuadiajdkapodaodkaokdaod"></Visprotein>
     </div>
 </div>
 
