@@ -14,7 +14,7 @@
     const pin5Protein = "The PIN proteins are transmembrane proteins which regulate plant growth by influencing auxin transport from the cytosol to the extracellular space. They only occur in plants and feature a configuration of 10 main helices that collectively form a pore. Eight types of PIN proteins are known (PIN1-PIN8), and recently, the structures of three PIN proteins were uncovered and published in Nature. The structure of the PIN5 protein differs from other PINs (Ung 2022) and has not yet been experimentally determined. This use case shows that the PIN5 protein structure is strongly conserved among many different plant species."
 </script>
 
-<div class="flex flex-col items-left justify-center w-full h-full text-4xl gap-4 p-32 pl-64 pr-64">
+<div class="flex flex-col items-left justify-center w-full h-full text-4xl gap-4 pt-20 p-32 pl-64 pr-64">
     <h1 class="font-bold"><span class='font-bold'>Sec</span><span class='text-blue-500'>PRED</span></h1>
     <span class="w-full h-1 bg-black"></span>
     <h2 class='text-[15px] leading-snug'><span class='font-bold'>Sec</span><span class='text-blue-500 font-bold'>PRED</span> is a web‐based tool for protein secondary structure prediction
@@ -35,7 +35,6 @@
         <Visprotein protein_code="4HHB" protein_name="Hemoglobin alpha 1" protein_description={hemoglobinAlphaOne}></Visprotein>
         <Visprotein protein_code="4HHB" protein_name="Cytochrome P450" protein_description={cytochromeP450}></Visprotein>
         <Visprotein protein_code="4HHB" protein_name="Pin5 protein" protein_description={pin5Protein}></Visprotein>
-        <Visprotein protein_code="4HHB" protein_name="Cool proteinek" protein_description="wjdiuadiajdkapodaodkaokdaod"></Visprotein>
     </div>
 </div>
 
