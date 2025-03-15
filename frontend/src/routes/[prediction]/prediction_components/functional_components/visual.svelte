@@ -14,14 +14,14 @@
   let dataArr = $state()
   let x = $state()
   let y = $state()
-  let wrap = (y, insides) => {return `<g transform="translate(0, ${y})">${insides}</g>`}
+  let wrap = (y, insides) => {return `<g transform="translate(0, ${y})" pointer-events="none">${insides}</g>`}
   let clipPath = (id, data) => {return `<g clip-path="url(#${id})">${data}</g>`}
   let defs =  (id) => {return `<defs><g id="icon-ss-Hb-8eaa"><path d="M 7.05 0.5 H 2.35 Q 0 0.5, -7.05 17.5 H -2.35 Q 0 17.5, 7.05 0.5" fill="#ff6600"></path></g><g id="icon-ss-Hf-8eaa"><path d="M -7.05 0.5 H -2.35 Q 0 0.5, 7.05 17.5 H 2.35 Q 0 17.5, -7.05 0.5" fill="#ff9900"></path></g><g id="icon-ss-Hef-8eaa" style="fill: rgb(255, 153, 0);"><path d="M 0 7.2 L 9.4 17.5 H 4.7 Q 2.35 17.5, 0 10.799999999999999"></path></g><g id="icon-ss-Heb-8eaa"><path d="M 11.75 7.2 L 2.35 17.5 H 7.05 Q 9.4 17.5, 11.75 10.799999999999999" fill="#ff6600"></path></g><clipPath id=${id}><rect x="0" y="0" width="940" height="18"></rect></clipPath></defs>`}
-  let text = (x, aminoAcid) => {return `<text style="font-size: 13.75px !important;" x="${x}" y="18" text-anchor="middle">${aminoAcid}</text>`}
+  let text = (x, aminoAcid) => {return `<text style="font-size: 13.75px !important;" x="${x}" pointer-events="none" y="18" text-anchor="middle">${aminoAcid}</text>`}
   
   let helix = (helixSymbol, x) => {return `<use xlink:href="${helixSymbol}" transform="translate(${x}, 0)"></use>`}
   let coil = (width, x) => {return `<rect width="${width}" height="3.6" y="7.2" x="${x}" fill="#cc3399"></rect>`}
-  let sheet = (width, x) => {return `<rect width="${width}" height="10" y="3.6" x="${x}" fill="#cc3399"></rect>`}
+  let sheet = (width, x) => {return `<rect width="${width}" height="10" y="3.6" x="${x}" fill="#660099"></rect>`}
   let sheetEnd = () => {}
 
   function rowBlocks(incr){
@@ -96,14 +96,24 @@
     {#each dataArr as e, index}
       <g transform="translate(0, {index*incr})">
         <g transform="translate(0, 0)">
-          {#each e[0] as text}
+          {#each e[0] as text, index}
+            <rect 
+              class="fill-gray-100 hover:fill-gray-300 transition-colors"
+              x={index * 11.75}``
+              y="0" 
+              z="1"
+              width="11.75" 
+              height="53" 
+              data-tip="true" 
+              currentItem="false">
+            </rect>
             {@html text}
           {/each}
         </g>
-        <g transform="translate(0, 23)">
+        <g transform="translate(0, 30)">
           {@html defs(index)}
           <g clip-path="url(#{index})">
-            {#each e[1] as visual}
+            {#each e[1] as visual, xa}
               {@html visual}
             {/each}
           </g>
@@ -112,4 +122,3 @@
     {/each}
 </svg>
                         
-

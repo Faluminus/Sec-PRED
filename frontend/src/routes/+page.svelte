@@ -29,12 +29,13 @@
         <div class="flex flex-row gap-3">
             <Pdb on:updated={handleUpdate}></Pdb>
             <Predict bind:input_ac={input_ac}></Predict>
-        </div>   
+        </div>
     </div>
     <div class="flex flex-row justify-between">
         <Visprotein protein_code="4HHB" protein_name="Hemoglobin alpha 1" protein_description={hemoglobinAlphaOne}></Visprotein>
         <Visprotein protein_code="4HHB" protein_name="Cytochrome P450" protein_description={cytochromeP450}></Visprotein>
         <Visprotein protein_code="4HHB" protein_name="Pin5 protein" protein_description={pin5Protein}></Visprotein>
     </div>
+    
 </div>
 

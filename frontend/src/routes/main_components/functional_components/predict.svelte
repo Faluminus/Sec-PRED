@@ -4,7 +4,7 @@
     export let input_ac;
 
     function PredictProtein(){
-        fetch("http://127.0.0.1:5000/api/do-prediction",{
+        fetch("http://192.168.17.167:5000/api/do-prediction",{
             method: "POST",
             body: JSON.stringify({
                 AC: input_ac
