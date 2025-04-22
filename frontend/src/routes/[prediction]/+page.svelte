@@ -16,6 +16,7 @@
 	let selected = $state('LSTM+CNN');
 	let timeWaited = $state(0);
 	let secondaryStructure = $state('');
+	let isMobile = false;
 
 	const PUBLIC_API = import.meta.env.VITE_PUBLIC_API;
 	async function fetchData(id) {
@@ -71,6 +72,8 @@
 
 	//Fetching
 	onMount(async () => {
+		isMobile = window.matchMedia('(max-width: 768px)').matches;
+		console.log("ismob:" + isMobile)
 		predID = $page.params.prediction
 		let sleepTime = 2;
 		let noData = true;
@@ -103,29 +106,51 @@
 <div class="flex h-screen w-screen items-center justify-center flex-row gap-4 p-10 pb-[55px]">
 	{#if checkExistence()}
 		{#if checkPending() && !errorExistence()}
-			<div class="flex items-center justify-center h-[100%] w-full flex-row gap-3">
-				<div class="flex flex-row gap-5 justify-center items-center w-full h-full">
-					<div class="flex flex-col gap-4 w-full h-full items-center">
-						<div class="flex flex-row gap-14 w-[80vw] items-end fixed">
-							<SelectModel bind:selected={selected} bind:handleModelChange={handleModelChange}></SelectModel>
-							<div class="flex flex-row gap-4">
-								<Printpdf></Printpdf>
-								<Printfasta></Printfasta>
+			{#if isMobile}
+				<div class="flex items-center justify-center h-[100%] w-full flex-row gap-3">
+					<div class="flex flex-row gap-5 justify-center items-center w-full h-full">
+						<div class="flex flex-col gap-4 w-full h-full items-center">
+							<div class="flex flex-row gap-14 w-[80vw] items-end fixed">
+								<SelectModel bind:selected={selected} bind:handleModelChange={handleModelChange}></SelectModel>
+							</div>
+							<div class="w-[80vw] flex-col rounded-2xl bg-gray-100 p-5 text-black shadow-md inline-flex my-28">
+								<p>
+								Sec<span class="font-[700]">PRED</span><span class="font-[200]">-{selected}</span>
+								</p>
+								<Visual bind:aminoAcid={predValue.AC} bind:secondaryStructure={secondaryStructure}/>
 							</div>
 						</div>
-						<ProteinVisExplain></ProteinVisExplain>
-						<div class="w-[80vw] flex-col rounded-2xl bg-gray-100 p-5 text-black shadow-md inline-flex my-28">
-							<p>
-							Sec<span class="font-[700]">PRED</span><span class="font-[200]">-{selected}</span>
-							</p>
-							<Visual bind:aminoAcid={predValue.AC} bind:secondaryStructure={secondaryStructure}/>
-						</div>
+					</div>
+					<div class="fixed bottom-10 left-10">
+						<Goback></Goback>
 					</div>
 				</div>
-				<div class="fixed bottom-10 left-10">
-					<Goback></Goback>
+			{/if}
+			{#if !isMobile}
+				<div class="flex items-center justify-center h-[100%] w-full flex-row gap-3">
+					<div class="flex flex-row gap-5 justify-center items-center w-full h-full">
+						<div class="flex flex-col gap-4 w-full h-full items-center">
+							<div class="flex flex-row gap-14 w-[80vw] items-end fixed">
+								<SelectModel bind:selected={selected} bind:handleModelChange={handleModelChange}></SelectModel>
+								<div class="flex flex-row gap-4">
+									<Printpdf></Printpdf>
+									<Printfasta></Printfasta>
+								</div>
+							</div>
+							<ProteinVisExplain></ProteinVisExplain>
+							<div class="w-[80vw] flex-col rounded-2xl bg-gray-100 p-5 text-black shadow-md inline-flex my-28">
+								<p>
+								Sec<span class="font-[700]">PRED</span><span class="font-[200]">-{selected}</span>
+								</p>
+								<Visual bind:aminoAcid={predValue.AC} bind:secondaryStructure={secondaryStructure}/>
+							</div>
+						</div>
+					</div>
+					<div class="fixed bottom-10 left-10">
+						<Goback></Goback>
+					</div>
 				</div>
-			</div>
+			{/if}
 		{/if}
 		{#if !checkPending() && !errorExistence()}
 			<div class="flex h-full w-full flex-col items-center justify-center">
