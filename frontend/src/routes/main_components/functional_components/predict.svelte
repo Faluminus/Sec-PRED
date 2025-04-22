@@ -4,16 +4,18 @@
     export let input_ac;
     const PUBLIC_API = import.meta.env.VITE_PUBLIC_API;
     function PredictProtein(){
-        fetch(PUBLIC_API + "do-prediction",{
+        if(input_ac !== ""){
+            fetch(PUBLIC_API + "do-prediction",{
             method: "POST",
             body: JSON.stringify({
                 AC: input_ac
             })
-        })
-        .then(response => response.json())
-        .then(json => {
-            goto(`/${json.ID}`)
-        })
+            })
+            .then(response => response.json())
+            .then(json => {
+                goto(`/${json.ID}`)
+            })
+        }
     }
 
     function handleKeyPressPredict(e){
