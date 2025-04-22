@@ -24,17 +24,17 @@
          and the results page includes a detailed explanation of the underlying methodology. Additionally, users have 
          the option to select which model outputs to display. For further details regarding the methodology and usage, 
          please consult the documentation. The service is freely accessible without requiring user registration.</h2>
-    <div class='flex flex-col gap-5 text-2xl items-center justify-center my-16 w-full'>
+    <div class='hidden sm:flex flex-col gap-5 text-2xl items-center justify-center my-16 w-full'>
         <h3>Insert PDB ID or amino acid sequence to predict</h3>
         <div class="flex flex-row gap-3">
             <Pdb on:updated={handleUpdate}></Pdb>
             <Predict bind:input_ac={input_ac}></Predict>
         </div>
-    </div>
-    <div class="flex flex-row items-center justify-center w-full gap-7">
+    </div>  
+    <div class="hidden sm:flex flex-row items-center justify-center w-full gap-7">
         <Visprotein protein_code="4HHB" protein_name="Hemoglobin alpha 1" protein_description={hemoglobinAlphaOne}></Visprotein>
         <Visprotein protein_code="4HHB" protein_name="Cytochrome P450" protein_description={cytochromeP450}></Visprotein>
         <Visprotein protein_code="4HHB" protein_name="Pin5 protein" protein_description={pin5Protein}></Visprotein>
-    </div>
+    </div>    
 </div>
 
