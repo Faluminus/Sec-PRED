@@ -8,4 +8,8 @@ Součástí projektu byla také vývoj webové aplikace, která umožňuje uživ
 # Running entire app
 docker-compose up --build
 
+web than can be accessed on port 3000 in browser
 each model inside can be run using python 3.11
+## Please rise an issue if bug or anything else seems to intervene with user experience 
+
+
